@@ -1,10 +1,11 @@
-# Homepage
+# Devin's Nest
 
-> 📪 idealclover 的新个人主页，基于 [Astro](https://astro.build/) 和 [Tailwind CSS](https://tailwindcss.com/) 构建。灵感来自于 [bento.me](https://bento.me/)
+Fork from 
+> 📪 idealclover 的新个人主页 [idealclover/homepage](https://github.com/idealclover/homepage)
 
-[预览地址 icl.moe](https://icl.moe)
+基于以上版本二创
+> 使用框架：[Astro](https://astro.build/) 和 [Tailwind CSS](https://tailwindcss.com/) 构建。
 
-![idealclover.jpg](https://s2.loli.net/2025/02/15/aVESFwu64Qlm1Nt.jpg)
 
 ## ✨ 功能特性
 
