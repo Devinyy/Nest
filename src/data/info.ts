@@ -1,21 +1,21 @@
 export default {
-  title: "idealclover",
-  desc: "Stay simple, stay naive.",
-  imgUrl: "https://cdn.idealclover.cn/Projects/homepage/icon.png",
-  location: "Beijing, China",
+  title: "Devin",
+  desc: "free soul, wild joy.",
+  imgUrl: "/favicons/android-chrome-512x512.png",
+  location: "ShangHai, China",
   titleCard: {
-    title: "翠翠 @idealclover",
-    desc: "产品经理/独立开发者/个人博主",
-    subdesc: "南京大学20届本科 & 清华大学MBA在读",
-    url: "https://idealclover.top/about.html",
+    title: "羊羽 @Devin",
+    desc: "前端开发/个人博主（奔赴中…）/AI",
+    subdesc: "浙江理工大学20届本科",
+    url: "https://xxxx.com",
     bgStyle:
       "bg-primary shadow-accent hover:bg-primary-focus hover:shadow-gray-500",
     btnText: "关于我 · 了解更多",
   },
   cvTitleCard: {
-    title: "翠翠 @idealclover",
-    desc: "Project Manager @Bytedance\n产品经理/独立开发者/个人博主/Vocaloid",
-    url: "https://idealclover.top/about.html",
+    title: "羊羽 @Devin",
+    desc: "Project Manager @Bytedance\n前端开发者/个人博主（奔赴中…）/AI",
+    url: "https://xxxx.com",
     bgStyle:
       "bg-primary shadow-accent hover:bg-primary-focus hover:shadow-gray-500 whitespace-pre-line",
     btnText: "查看简历",
