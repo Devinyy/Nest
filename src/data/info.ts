@@ -23,7 +23,7 @@ export default {
   blogCard: {
     title: "博客",
     desc: "记录技术/生活/随想/测评",
-    subdesc: "https://idealclover.top",
+    subdesc: "https://xxxxxxxxxxx",
     url: "https://idealclover.top/articles.html",
     btnText: "去逛逛 · 历史文章",
     bgStyle:
