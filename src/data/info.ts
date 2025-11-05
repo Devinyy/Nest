@@ -44,11 +44,6 @@ export default {
       iconClass: "jike",
     },
     {
-      title: "少数派",
-      url: "https://sspai.com/u/idealclover",
-      iconClass: "sspai",
-    },
-    {
       title: "Steam",
       url: "https://steamcommunity.com/id/idealclover",
       iconClass: "Steam",
@@ -100,13 +95,13 @@ export default {
       title: "🗃️ 个人项目",
     },
     {
-      title: "📕 逛展日记",
+      title: "🧩 日常碎片",
     },
     {
       title: "🎼 音乐创作",
     },
     {
-      title: "👋 关注翠翠",
+      title: "👋 关注羊羽",
     },
     {
       title: "📫 与我联系",
@@ -117,7 +112,7 @@ export default {
     desc: "3D模型涂色Demo",
     subdesc: "实现两种3D模型涂色方式",
     url: "https://github.com/Devinyy/LayaModelColoring3D",
-    btnText: "前往查看 →",
+    btnText: "冲鸭→ 🦆",
     bgStyle:
       "bg-[#9AB2DE] shadow-[#2C3E50]/75 hover:shadow-[#2C3E50]",
     textStyle: "text-black",
@@ -138,7 +133,7 @@ export default {
         "bg-[#3DA88B] shadow-[#3DA88B]/75 hover:bg-[#3DA88B]/75 hover:shadow-[#3DA88B]",
     },
     {
-      title: "个人网站",
+      title: "个人小窝",
       desc: "Nest 2.0",
       fulldesc: "个人网站2.0，焕然一新",
       subdesc: "Astro/NestJS",
@@ -172,7 +167,7 @@ export default {
   ],
   projectCardEnd: {
     title: "在 GitHub 查看更多开源创作",
-    desc: "@idealclover",
+    desc: "@Devinyy",
     url: "https://github.com/Devinyy",
     btnText: "10+ repositories ✨",
     bgStyle:
@@ -183,84 +178,70 @@ export default {
   },
   diaryCards: [
     {
-      title: "翠儿逛逛展：黑神话悟空艺术展",
-      url: "https://www.xiaohongshu.com/explore/687a4b7e0000000012016230?source=webshare&xhsshare=pc_web&xsec_token=ABfLj0ylTs8rlqobIgcIy_moxQqCDc5BSW7BHdV0df6RQ=&xsec_source=pc_share",
+      title: "台州行",
+      url: "https://xxxx",
       bgStyle:
-        "bg-[url('https://image.idealclover.cn/projects/Homepage/assets/xhs_5.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
+        "bg-[url('https://dummyimage.com/170x304/9c9c9c/fff.png&text=台州行')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
       textStyle: "text-white",
     },
     {
-      title: "翠儿逛逛展：中国电影博物馆",
-      url: "https://www.xiaohongshu.com/explore/686bd5fd000000002400a7b0?xsec_token=AB0q8K--ASdRGa_WQK6IoPDm5h3W0QuvZPTjUKun1dtlU=&xsec_source=pc_search",
+      title: "青甘环线之旅",
+      url: "https://xxxx",
       bgStyle:
-        "bg-[url('https://image.idealclover.cn/projects/Homepage/assets/xhs_1.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
+        "bg-[url('https://dummyimage.com/170x304/9c9c9c/fff.png&text=青甘环线之旅')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
       textStyle: "text-white",
-    },
-    {
-      title: "翠儿逛逛展：铁道博物馆（东郊馆）",
-      url: "https://www.xiaohongshu.com/explore/686a79b50000000015021858?xsec_token=ABIJKaAjtDscsBMgUW6D5izXgVXwnKC3-7Mn6_Q8HqBmE=&xsec_source=pc_search",
-      bgStyle:
-        "bg-[url('https://image.idealclover.cn/projects/Homepage/assets/xhs_2.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
-      textStyle: "text-white",
-    },
-    {
-      title: "翠儿逛逛展：无人机应用及防控大会（下）",
-      url: "https://www.xiaohongshu.com/explore/686945a3000000001203ceb3?xsec_token=ABQ3TiZa-Faa5STBNd5HPuuqj6Dl6xzoVddFfSbmkm9E4=&xsec_source=pc_search",
-      bgStyle:
-        "bg-[url('https://image.idealclover.cn/projects/Homepage/assets/xhs_3.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
-      textStyle: "text-white",
-    },
+    }
   ],
-  musicCards: [
-    {
-      title: "为谁而为（原作 @COPY）",
-      desc: "青溯 version",
-      url: "https://www.bilibili.com/video/BV1cs4y1z7Mq",
-      btnText: "3542 views 🎥",
-      bgStyle:
-        "bg-[url('https://cdn.idealclover.cn/Projects/homepage/music_1.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
-      textStyle: "text-white",
-      btnStyle: "glass",
-      btnTextStyle: "text-white capitalize",
-    },
-    {
-      title: "我从人间走过（原作 @瞳荧荧）",
-      desc: "青溯 version",
-      url: "https://www.bilibili.com/video/BV1BF411L7AH",
-      btnText: "1750 views 🎥",
-      bgStyle:
-        "bg-[url('https://cdn.idealclover.cn/Projects/homepage/music_2.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
-      textStyle: "text-white",
-      btnStyle: "glass",
-      btnTextStyle: "text-white capitalize",
-    },
-    {
-      title: "千里邀月（原作 @纯白）",
-      desc: "星尘inf/青溯/沨漪 version",
-      url: "https://www.bilibili.com/video/BV11G4y1z7XZ",
-      btnText: "2163 views 🎥",
-      bgStyle:
-        "bg-[url('https://cdn.idealclover.cn/Projects/homepage/music_3.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
-      textStyle: "text-white",
-      btnStyle: "glass",
-      btnTextStyle: "text-white capitalize",
-    },
-    {
-      title: "在 Bilibili 查看更多创作",
-      desc: "@idealclover",
-      url: "https://space.bilibili.com/5044093",
-      btnText: "查看更多",
-      bgStyle:
-        "bg-[url('https://cdn.idealclover.cn/Projects/homepage/music_4.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
-      textStyle: "text-white",
-      btnStyle: "glass",
-      btnTextStyle: "text-white capitalize",
-    },
-  ],
+  // musicCards: [
+  //   {
+  //     title: "为谁而为（原作 @COPY）",
+  //     desc: "青溯 version",
+  //     url: "https://www.bilibili.com/video/BV1cs4y1z7Mq",
+  //     btnText: "3542 views 🎥",
+  //     bgStyle:
+  //       "bg-[url('https://cdn.idealclover.cn/Projects/homepage/music_1.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
+  //     textStyle: "text-white",
+  //     btnStyle: "glass",
+  //     btnTextStyle: "text-white capitalize",
+  //   },
+  //   {
+  //     title: "我从人间走过（原作 @瞳荧荧）",
+  //     desc: "青溯 version",
+  //     url: "https://www.bilibili.com/video/BV1BF411L7AH",
+  //     btnText: "1750 views 🎥",
+  //     bgStyle:
+  //       "bg-[url('https://cdn.idealclover.cn/Projects/homepage/music_2.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
+  //     textStyle: "text-white",
+  //     btnStyle: "glass",
+  //     btnTextStyle: "text-white capitalize",
+  //   },
+  //   {
+  //     title: "千里邀月（原作 @纯白）",
+  //     desc: "星尘inf/青溯/沨漪 version",
+  //     url: "https://www.bilibili.com/video/BV11G4y1z7XZ",
+  //     btnText: "2163 views 🎥",
+  //     bgStyle:
+  //       "bg-[url('https://cdn.idealclover.cn/Projects/homepage/music_3.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
+  //     textStyle: "text-white",
+  //     btnStyle: "glass",
+  //     btnTextStyle: "text-white capitalize",
+  //   },
+  //   {
+  //     title: "在 Bilibili 查看更多创作",
+  //     desc: "@idealclover",
+  //     url: "https://space.bilibili.com/5044093",
+  //     btnText: "查看更多",
+  //     bgStyle:
+  //       "bg-[url('https://cdn.idealclover.cn/Projects/homepage/music_4.jpg')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
+  //     textStyle: "text-white",
+  //     btnStyle: "glass",
+  //     btnTextStyle: "text-white capitalize",
+  //   },
+  // ],
   teleCards: [
     {
-      title: "Email: idealclover@163.com",
-      url: "mailto:idealclover@163.com",
+      title: "Email: 1010732441@qq.com",
+      url: "mailto:1010732441@qq.com",
       iconClass: "mail_s",
       iconInfoClass: "mail",
       textStyle: "font-normal",
@@ -268,8 +249,8 @@ export default {
         "bg-primary hover:bg-primary-focus shadow-accent hover:shadow-gray-500",
     },
     {
-      title: "QQ: 1455169173",
-      url: "http://wpa.qq.com/msgrd?v=3&uin=1455169173&site=qq&menu=yes",
+      title: "QQ: 1010732441",
+      url: "http://wpa.qq.com/msgrd?v=3&uin=1010732441&site=qq&menu=yes",
       iconClass: "QQ_s",
       iconInfoClass: "QQ",
       textStyle: "font-normal",
@@ -277,8 +258,8 @@ export default {
         "bg-primary hover:bg-primary-focus shadow-accent hover:shadow-gray-500",
     },
     {
-      title: "Telegram: @idealclover",
-      url: "http://t.me/idealclover",
+      title: "Telegram: @Devinyy",
+      url: "http://t.me/Devinyy",
       iconClass: "telegram_s",
       iconInfoClass: "telegram",
       textStyle: "font-normal",
@@ -286,8 +267,8 @@ export default {
         "bg-primary hover:bg-primary-focus shadow-accent hover:shadow-gray-500",
     },
     {
-      title: "Twitter: @idealclover",
-      url: "https://twitter.com/idealclover",
+      title: "X: @zhangxiang0511",
+      url: "https://x.com/zhangxiang0511",
       iconClass: "twitter_s",
       iconInfoClass: "twitter",
       textStyle: "font-normal",

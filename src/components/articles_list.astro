@@ -23,22 +23,62 @@ import articlesList from "../data/articles_list";
           class={`tab-content ${index === 0 ? "block" : "hidden"}`}
           data-tab-index={index}
         >
-          {articles.articles.map((article) => (
-            <a
-              class="card card-compact rounded-xl bg-neutral mt-2 hover:bg-base-300"
-              href={article.url}
-              target="_blank"
-            >
-              <div class="card-body">
-                <div class="text-base md:text-xl sm:flex sm:justify-between">
-                  {article.title}
-                  <div class="inline-block float-right text-gray-500">
-                    {article.time}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-[10px]">
+            {articles.articles.map((article) => (
+              <a
+                class="card rounded-xl bg-neutral hover:bg-base-300 overflow-hidden w-full"
+                href={article.url}
+                target="_blank"
+              >
+                <!-- 封面：有图显示图片；无图显示占位 -->
+                {article.cover ? (
+                  <figure class="w-full h-40 md:h-52">
+                    <img src={article.cover} alt={article.title} class="w-full h-full object-cover object-center" />
+                  </figure>
+                ) : (
+                    <img src={'https://dummyimage.com/395x208/9c9c9c/fff.png&text='+ article.title} alt={article.title} class="w-full h-full object-cover object-center" />
+                  
+                )}
+
+                <div class="card-body">
+                  <!-- 元信息行：日期、（可选）阅读数 -->
+                  <div class="flex justify-between items-center gap-6 text-sm text-gray-400">
+                    <span class="inline-flex items-center gap-2">
+                      <span class="i-calendar">📅</span>
+                      {article.time}
+                    </span>
+                    {article.views && (
+                      <span class="inline-flex items-center gap-2">
+                        <span class="i-eye">👁️</span>
+                        {article.views}
+                      </span>
+                    )}
+                  </div>
+
+                  <!-- 标题：移动端单行展示 -->
+                  <h3 class="text-sm sm:text-base md:text-xl font-bold mt-2 whitespace-nowrap">{article.title}</h3>
+
+                  <!-- 摘要（可选） -->
+                  {article.subdesc && (
+                    <p class="mt-2 text-sm md:text-base text-gray-300 line-clamp-2 overflow-hidden">{article.subdesc}</p>
+                  )}
+
+                  <!-- 继续阅读链接 -->
+                  <div class="card-actions justify-end">
+                    <button
+                      class:list={[
+                        "btn btn-sm rounded-xl border-0",
+                        "bg-primary shadow-accent hover:bg-primary-focus hover:shadow-gray-500",
+                        "text-white",
+                      ]}
+                    >
+                      开箱！📦
+                    </button>
                   </div>
                 </div>
-              </div>
-            </a>
-          ))}
+              </a>
+            ))}
+          </div>
 
           <div class="pt-2" />
 
