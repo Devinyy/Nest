@@ -13,7 +13,7 @@ import App from "../components/app.astro";
     <meta property="og:type" content="website" />
     <meta property="og:description" content="羊羽的个人名片👋" />
     <meta property="og:url" content="https://xxxxxxxxx.cn" />
-    <meta property="og:image" content="icons/cover.png" />
+    <meta property="og:image" content="icons/introduction.png" />
     <link
       rel="preload"
       href=`${Astro.site}/fonts/MaoKenZhuYuanTi.ttf`
@@ -104,10 +104,64 @@ import App from "../components/app.astro";
           opacity: 1;
         }
       }
+      /* 首页顶部区域（封面+箭头） */
+      .index-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* 移动端（手机）优化 */
+      @media (max-width: 767px) {
+        .index-content {
+          height: 100dvh; /* 避免 iOS 导航栏占位问题 */
+          padding: 0 16px;
+        }
+        .index-content .cover-img {
+          width: 100vw;
+          height: 100dvh;
+          object-fit: cover;
+        }
+        .cover-tittle {
+          z-index: 9999;
+          font-size: 24px;
+          text-align: center;
+        }
+        .arrow-down {
+          width: 48px;
+          height: 32px;
+          bottom: 12px;
+        }
+        .arrow-down-wrap {
+          height: 96px;
+        }
+      }
+
+      /* 平板优化（md≈768–1024） */
+      @media (min-width: 768px) and (max-width: 1024px) {
+        .index-content {
+          height: 100vh;
+        }
+        .cover-tittle {
+          font-size: 28px;
+        }
+        .arrow-down {
+          width: 64px;
+          height: 42px;
+          bottom: 16px;
+        }
+        .arrow-down-wrap {
+          height: 110px;
+        }
+      }
     </style>
   </head>
   <body class="bg-gray-100 dark:bg-neutral-900">
-    <div style="display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; overflow: hidden; position: relative;"> 
+    <div class="index-content"> 
       <img class="cover-img"
         src=`${Astro.site}/icons/cover.jpg` alt="" />
       <text class="cover-tittle">Welcome to Devin's Nest</text>

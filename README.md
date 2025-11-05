@@ -65,12 +65,13 @@ yarn build
 - [Astro](https://astro.build/) - 构建该网站的现代静态站点构建工具
 - [Tailwind CSS](https://tailwindcss.com/) - 实用优先的 CSS 框架
 - [bento.me](https://bento.me/) - 设计灵感来源
+- [idealclover.top](https://idealclover.top) - 原作者
 
-## 👨‍💻 作者 idealclover
+## 👨‍💻 二创 Devin
 
-- 网站：[idealclover.top](https://idealclover.top)
-- GitHub：[@idealclover](https://github.com/idealclover)
-- 邮箱：idealclover@163.com
+- 网站：[xxxxxxx](https://xxxxx)
+- GitHub：[@Devin](https://github.com/Devinyy)
+- 1010732441@qq.com
 
 欢迎访问我的个人主页了解更多信息~
 

@@ -22,31 +22,26 @@ export default {
   },
   blogCard: {
     title: "博客",
-    desc: "记录技术/生活/随想/测评",
+    desc: "记录技术/生活/随想/游戏/旅行/摄影",
     subdesc: "https://xxxxxxxxxxx",
-    url: "https://idealclover.top/articles.html",
+    url: "https://xxxxxxxxxxx",
     btnText: "去逛逛 · 历史文章",
     bgStyle:
-      "bg-[#2C3E50] shadow-[#2C3E50]/75 hover:bg-[#2C3E50]/75 hover:shadow-[#2C3E50]",
+      "bg-[#9eb4ca] shadow-[#9eb4ca]/75 hover:bg-[#9eb4ca]/75 hover:shadow-[#9eb4ca]",
     textStyle: "text-white",
-    btnStyle: "bg-[#162D3B]",
+    btnStyle: "bg-[#9e9eca]",
     btnTextStyle: "text-white",
   },
   secondaryCards: [
     {
       title: "网易云",
-      url: "https://music.163.com/#/artist?id=52267156",
+      url: "https://music.163.com/#/user/home?id=455214094",
       iconClass: "netease",
     },
-    // {
-    //   title: "即刻",
-    //   url: "https://web.okjike.com/u/e2ede1ee-79e6-420b-92fc-9983566db44c",
-    //   iconClass: "jike",
-    // },
     {
-      title: "酷安",
-      url: "https://www.coolapk.com/u/999081",
-      iconClass: "coolapk",
+      title: "即刻",
+      url: "https://web.okjike.com/u/e2ede1ee-79e6-420b-92fc-9983566db44c",
+      iconClass: "jike",
     },
     {
       title: "少数派",
@@ -61,18 +56,9 @@ export default {
   ],
   primaryCards: [
     {
-      title: "知乎",
-      url: "https://www.zhihu.com/people/cuicuijiang",
-      bgStyle:
-        "bg-[#0275D2] shadow-[#0275D2]/75 hover:bg-[#0275D2]/75 hover:shadow-[#0275D2]",
-      btnText: "2916 Followers",
-      textStyle: "text-white",
-      btnStyle: "zhihu text-white",
-    },
-    {
       title: "Bilibili",
-      url: "https://space.bilibili.com/5044093",
-      btnText: "1686 Followers",
+      url: "https://space.bilibili.com/48412050",
+      btnText: "3 Followers",
       bgStyle:
         "bg-[#FB7299] shadow-[#FB7299]/75 hover:bg-[#FB7299]/75 hover:shadow-[#FB7299]",
       btnStyle: "bili text-white",
@@ -80,8 +66,8 @@ export default {
     },
     {
       title: "GitHub",
-      url: "https://github.com/idealclover",
-      btnText: "808 Followers",
+      url: "https://github.com/Devinyy",
+      btnText: "5 Followers",
       bgStyle:
         "bg-[#181717] shadow-[#181717]/75 hover:bg-[#181717]/75 hover:shadow-[#181717]",
       btnStyle: "github text-white",
@@ -89,26 +75,26 @@ export default {
     },
     {
       title: "即刻",
-      url: "https://web.okjike.com/u/e2ede1ee-79e6-420b-92fc-9983566db44c",
-      btnText: "537 Followers",
+      url: "https://web.okjike.com/u/AAB03865-BE89-4572-9B0E-29F2B4D74284",
+      btnText: "9 Followers",
       bgStyle:
         "bg-[#FFE411] shadow-[#C9A705]/75 hover:bg-[#C9A705]/75 hover:shadow-[#C9A705]",
       btnStyle: "text-white",
       textStyle: "text-white",
     },
-    // {
-    //   title: "网易云",
-    //   url: "https://music.163.com/#/artist?id=52267156",
-    //   btnText: "77 Followers",
-    //   bgStyle:
-    //     "bg-[#C20B0D] shadow-[#C20B0D]/75 hover:bg-[#C20B0D]/75 hover:shadow-[#C20B0D]",
-    //   btnStyle: "netease text-white",
-    //   textStyle: "text-white",
-    // },
+    {
+      title: "网易云",
+      url: "https://music.163.com/#/user/home?id=455214094",
+      btnText: "7 Followers",
+      bgStyle:
+        "bg-[#C20B0D] shadow-[#C20B0D]/75 hover:bg-[#C20B0D]/75 hover:shadow-[#C20B0D]",
+      btnStyle: "netease text-white",
+      textStyle: "text-white",
+    },
   ],
   sectionTitles: [
     {
-      title: "📝 博客文章",
+      title: "📝 最新文章",
     },
     {
       title: "🗃️ 个人项目",
@@ -127,117 +113,68 @@ export default {
     },
   ],
   projectCardStart: {
-    title: "南哪课表（Android & iOS）",
-    desc: "简洁无广告的南大专属课表",
-    subdesc: "累积服务 5w+ 南大同学",
-    url: "https://nju.app",
-    btnText: "https://nju.app",
+    title: "Laya-Model-Coloring-3D",
+    desc: "3D模型涂色Demo",
+    subdesc: "实现两种3D模型涂色方式",
+    url: "https://github.com/Devinyy/LayaModelColoring3D",
+    btnText: "前往查看 →",
     bgStyle:
-      "bg-[url('https://cdn.idealclover.cn/Projects/homepage/project_nnkb_2.jpg')] bg-cover bg-center shadow-[#2C3E50]/75 hover:shadow-[#2C3E50]",
+      "bg-[#9AB2DE] shadow-[#2C3E50]/75 hover:shadow-[#2C3E50]",
     textStyle: "text-black",
     btnStyle: "glass",
     btnTextStyle: "text-black lowercase",
   },
   projectCards: [
     {
-      title: "心花日记",
-      desc: "有温度的日记应用",
-      fulldesc: "写下日记，收到温暖，浇灌花儿",
-      subdesc: "APP/小程序",
-      url: "https://m.flowerdiary.top/",
+      title: "Framework",
+      desc: "Laya3D游戏框架",
+      fulldesc: "Laya3D游戏框架",
+      subdesc: "Laya/Framework",
+      url: "https://github.com/Devinyy/My-Laya-Game-Framework",
       btnStyle: "bg-[#66D4BC] hover:bg-[#8DEDDE] text-white",
-      btnText: "8W+ Diaries 📖",
+      btnText: "戳我！ 💥",
       textStyle: "text-white",
-      // 心花日记的颜色太浅了 深一个档位
       bgStyle:
         "bg-[#3DA88B] shadow-[#3DA88B]/75 hover:bg-[#3DA88B]/75 hover:shadow-[#3DA88B]",
-      // bgStyle:
-      //   "bg-primary hover:bg-primary-focus shadow-accent hover:shadow-gray-500",
     },
     {
-      title: "小刻食堂",
-      desc: "明日方舟蹲饼助手",
-      fulldesc: "明日方舟蹲饼助手，实时获取兔兔动态",
-      subdesc: "安卓/iOS APP",
-      url: "https://ceobecanteen.top/",
+      title: "个人网站",
+      desc: "Nest 2.0",
+      fulldesc: "个人网站2.0，焕然一新",
+      subdesc: "Astro/NestJS",
+      url: "https://github.com/Devinyy/Nest",
       btnStyle: "bg-[#FABA81] hover:bg-[#FDD5A7] text-white",
-      btnText: "1K+ Users 👤",
+      btnText: "探探~ 🔍",
       textStyle: "text-white",
       bgStyle:
         "bg-[#f1995a] shadow-[#f1995a]/75 hover:bg-[#f1995a]/75 hover:shadow-[#f1995a]",
-      // bgStyle:
-      //   "bg-primary hover:bg-primary-focus shadow-accent hover:shadow-gray-500",
     },
     {
-      title: "我要戴口罩",
-      desc: "给头像戴个口罩",
-      fulldesc: "给头像戴个口罩，总计 UV 100w+",
-      subdesc: "微信小程序",
-      url: "https://idealclover.top/archives/602",
-      btnText: "1M+ Users 🔥",
-      bgStyle:
-        "bg-primary hover:bg-primary-focus shadow-accent hover:shadow-gray-500",
-    },
-    {
-      title: "毕业帽头像",
-      desc: "给头像戴顶毕业帽",
+      title: "后台管理系统",
+      desc: "个人网站后台",
       fulldesc: "给头像戴顶毕业帽，让我们跃入人海",
-      subdesc: "微信小程序",
-      url: "https://idealclover.top/archives/622",
-      btnText: "1K+ Users 👤",
+      subdesc: "React",
+      url: "https://github.com/Devinyy/react-blog-admin",
+      btnText: "瞧瞧→ 👀",
       bgStyle:
         "bg-primary hover:bg-primary-focus shadow-accent hover:shadow-gray-500 max-sm:hidden",
     },
     {
-      title: "Merger-Plus",
-      desc: "可配置的打赏页",
-      fulldesc: "简洁、美观、可配置的打赏页面",
-      subdesc: "应用于个人打赏",
-      url: "https://donate.idealclover.cn",
-      btnText: "91 Stars ✨",
+      title: "口袋Wiki",
+      desc: "口袋精灵2助手",
+      fulldesc: "致敬童年回忆，留住那个夏天",
+      subdesc: "wiki网站",
+      url: "",
+      btnText: "敬请期待 🫡",
       bgStyle:
         "bg-primary hover:bg-primary-focus shadow-accent hover:shadow-gray-500 max-sm:hidden",
-    },
-    {
-      title: "Easy-DLD",
-      desc: "可配置应用下载页",
-      fulldesc: "简洁、美观、可配置的应用下载页",
-      subdesc: "应用于南哪课表",
-      url: "https://nju.app",
-      btnText: "65 Stars ✨",
-      bgStyle:
-        "bg-primary hover:bg-primary-focus shadow-accent hover:shadow-gray-500 max-sm:hidden",
-    },
-    {
-      title: "Caritas APP",
-      desc: "优质文章整理",
-      fulldesc: "整理了一些答主的优质知乎回答",
-      subdesc: "安卓/iOS APP",
-      url: "https://zhuanlan.zhihu.com/p/556201282",
-      btnText: "1K+ Likes ❤️",
-      textStyle: "text-white",
-      btnStyle: "bg-[#FEAD68] hover:bg-[#FFCC96] text-white",
-      bgStyle:
-        "bg-[#fc883b] shadow-[#fc883b]/75 hover:bg-[#fc883b]/75 hover:shadow-[#fc883b]",
-    },
-    {
-      title: "Unitypecho",
-      desc: "小程序博客框架",
-      subdesc: "适配 Typecho",
-      fulldesc: "使用 UniAPP 搭建的小程序博客",
-      url: "https://idealclover.top/archives/613",
-      btnText: "141 Stars ✨",
-      textStyle: "text-white",
-      btnStyle: "bg-[#54E236] hover:bg-[#84F675] text-white",
-      bgStyle:
-        "bg-[#2cbb00] shadow-[#2cbb00]/75 hover:bg-[#2cbb00]/75 hover:shadow-[#2cbb00]",
     },
   ],
   projectCardEnd: {
     title: "在 GitHub 查看更多开源创作",
     desc: "@idealclover",
-    url: "https://github.com/idealclover",
-    btnText: "3K+ Stars ✨",
+    url: "https://github.com/Devinyy",
+    btnText: "10+ repositories ✨",
     bgStyle:
       "bg-[url('https://cdn.idealclover.cn/Projects/homepage/project_github.jpg')] bg-cover bg-center shadow-[#6e5494]/75 hover:shadow-[#6e5494]",
     textStyle: "text-white",
