@@ -6,8 +6,12 @@ import Card_4x2 from "./card_4x2.astro";
 import Card_8x1 from "./card_8x1.astro";
 import Articles_List from "./articles_list.astro";
 import info from "../data/info";
+import StickyNav from "./sticky_nav.astro";
 // const showCV = false;
 ---
+
+<!-- 置顶固定导航组件（滚动至 100vh 后显示） -->
+<StickyNav showAuth={false} />
 
 <div class="container m-auto lg:max-xl:w-min main">
   <div
@@ -191,6 +195,9 @@ import info from "../data/info";
 </div>
 
 <style>
+  .container {
+    padding-top: 40px;
+  }
   .mail {
     background: url("https://image.idealclover.cn/projects/Homepage/icons/icons.png") -0px -0px
       no-repeat;
@@ -238,8 +245,9 @@ import info from "../data/info";
           const element = document.querySelector(`.${item.className}`);
           if (data.count == null) return;
           if (element) element.textContent = data.count + " Followers";
-        })
-        .catch((error) => console.error("Error:", error));
+      })
+      .catch((error) => console.error("Error:", error));
     });
+
   });
 </script>

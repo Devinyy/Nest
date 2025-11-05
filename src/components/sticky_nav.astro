@@ -1,0 +1,111 @@
+---
+// 可选：通过 props 控制是否显示登录注册
+const { showAuth = false } = Astro.props;
+---
+
+<header
+  id="stickyNav"
+  class="fixed top-0 left-0 right-0 z-50 border-b border-gray-800 bg-[#0f1115]/80 backdrop-blur-sm transition-transform duration-300 ease-out -translate-y-full opacity-0 pointer-events-none"
+>
+  <div class="max-w-screen-2xl mx-auto px-2 xs:px-5 lg:px-10">
+    <nav class="flex items-center justify-between h-12">
+      <!-- 左侧：品牌（手机仅显示品牌）；桌面显示品牌+链接 -->
+      <div class="flex items-center gap-5 text-sm">
+        <a href="/" class="text-white font-semibold">Devin's Nest</a>
+        <a href="/" class="hidden sm:inline text-gray-300 hover:text-white">首页</a>
+        <a href="/blog" class="hidden sm:inline text-gray-300 hover:text-white">博客</a>
+        <a href="/about" class="hidden sm:inline text-gray-300 hover:text-white">关于</a>
+        <a href="/contact" class="hidden sm:inline text-gray-300 hover:text-white">联系</a>
+      </div>
+      <!-- 右侧：搜索 + 收纳按钮（手机可展开剩余功能）；桌面保持原样 -->
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="搜索文章…"
+            class="w-28 sm:w-72 h-8 rounded-full bg-gray-800 text-gray-100 placeholder-gray-500 outline-none pl-4 pr-9 focus:ring-2 focus:ring-emerald-500"
+          />
+          <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">Q</span>
+        </div>
+        <!-- 收纳按钮：仅在手机显示，点击展开功能按钮 -->
+        <button id="navToggle" class="sm:hidden px-3 py-1 rounded-md bg-gray-800 text-gray-200 hover:bg-gray-700" aria-expanded="false" aria-controls="mobilePanel" aria-label="打开菜单">☰</button>
+        {showAuth ? (
+          <>
+            <a href="/login" class="hidden sm:inline px-3 py-1 rounded-md bg-gray-800 text-gray-200">登录</a>
+            <a href="/register" class="hidden sm:inline px-3 py-1 rounded-md bg-emerald-500 text-black">注册</a>
+          </>
+        ) : null}
+      </div>
+    </nav>
+  </div>
+  <!-- 手机展开层：展示剩余功能按钮（博客、关于、联系等） -->
+  <div
+    id="mobilePanel"
+    class="sm:hidden fixed top-12 left-0 right-0 bg-[#0f1115]/95 backdrop-blur-sm border-b border-gray-800 transform -translate-y-4 opacity-0 pointer-events-none transition-all duration-200"
+  >
+    <div class="max-w-screen-2xl mx-auto px-2 xs:px-5 lg:px-10 py-3">
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/" class="text-gray-300 hover:text-white">首页</a>
+        <a href="/blog" class="text-gray-300 hover:text-white">博客</a>
+        <a href="/about" class="text-gray-300 hover:text-white">关于</a>
+        <a href="/contact" class="text-gray-300 hover:text-white">联系</a>
+        {showAuth ? (
+          <>
+            <a href="/login" class="px-3 py-1 rounded-md bg-gray-800 text-gray-200">登录</a>
+            <a href="/register" class="px-3 py-1 rounded-md bg-emerald-500 text-black">注册</a>
+          </>
+        ) : null}
+      </div>
+    </div>
+  </div>
+  <style>
+    /* 小屏适配：让左侧菜单可横向滚动、隐藏滚动条 */
+    @media (max-width: 640px) {
+      #stickyNav nav > div:first-child {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        white-space: nowrap;
+      }
+      #stickyNav nav > div:first-child::-webkit-scrollbar { display: none; }
+    }
+  </style>
+</header>
+
+<script>
+  // 滚动超过 100vh 显示置顶导航
+  document.addEventListener("DOMContentLoaded", () => {
+    const nav = document.getElementById("stickyNav");
+    const toggleNav = () => {
+      if (!nav) return;
+      const shouldShow = window.scrollY >= window.innerHeight;
+      if (shouldShow) {
+        nav.classList.remove("-translate-y-full", "opacity-0", "pointer-events-none");
+        nav.classList.add("translate-y-0", "opacity-100");
+      } else {
+        nav.classList.add("-translate-y-full", "opacity-0", "pointer-events-none");
+        nav.classList.remove("translate-y-0", "opacity-100");
+      }
+    };
+    toggleNav();
+    window.addEventListener("scroll", toggleNav, { passive: true });
+
+    // 手机收纳按钮展开/收起
+    const panel = document.getElementById("mobilePanel");
+    const btn = document.getElementById("navToggle");
+    const togglePanel = () => {
+      if (!panel || !btn) return;
+      const opened = btn.getAttribute("aria-expanded") === "true";
+      if (opened) {
+        btn.setAttribute("aria-expanded", "false");
+        panel.classList.add("-translate-y-4", "opacity-0", "pointer-events-none");
+        panel.classList.remove("translate-y-0", "opacity-100");
+      } else {
+        btn.setAttribute("aria-expanded", "true");
+        panel.classList.remove("-translate-y-4", "opacity-0", "pointer-events-none");
+        panel.classList.add("translate-y-0", "opacity-100");
+      }
+    };
+    if (btn) btn.addEventListener("click", togglePanel);
+  });
+</script>

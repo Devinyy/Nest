@@ -3,7 +3,7 @@ import App from "../components/app.astro";
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="black">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -49,6 +49,12 @@ import App from "../components/app.astro";
         font-display: swap;
       }
 
+      /* iPhone X 等有底部 Home 指示的机型，增加 20px 高度 */
+      :root { --safe-extra: 0px; }
+      @supports (padding: env(safe-area-inset-bottom)) {
+        :root { --safe-extra: 20px; }
+      }
+
       body {
         cursor: url(/icons/cursor.ico), auto;
         
@@ -86,7 +92,8 @@ import App from "../components/app.astro";
         bottom: 0;
         left: 0;
         width: 100vw;
-        height: 120px;
+        height: calc(120px + var(--safe-extra));
+        
         display: flex;
         justify-content: center;
         align-items: flex-end;
@@ -96,11 +103,11 @@ import App from "../components/app.astro";
 
       @keyframes arrowBounce {
         0%, 100% {
-          transform: translateY(0);
+          transform: translateY(calc(0px - var(--safe-extra)));
           opacity: 0.85;
         }
         50% {
-          transform: translateY(12px);
+          transform: translateY(calc(12px - var(--safe-extra)));
           opacity: 1;
         }
       }
@@ -137,7 +144,7 @@ import App from "../components/app.astro";
           bottom: 12px;
         }
         .arrow-down-wrap {
-          height: 96px;
+          height: calc(96px + var(--safe-extra));
         }
       }
 
@@ -152,15 +159,15 @@ import App from "../components/app.astro";
         .arrow-down {
           width: 64px;
           height: 42px;
-          bottom: 16px;
+          bottom: 16px + var(--safe-extra);
         }
         .arrow-down-wrap {
-          height: 110px;
+          height: calc(110px + var(--safe-extra));
         }
       }
     </style>
   </head>
-  <body class="bg-gray-100 dark:bg-neutral-900">
+  <body class="bg-base-100">
     <div class="index-content"> 
       <img class="cover-img"
         src=`${Astro.site}/icons/cover.jpg` alt="" />
