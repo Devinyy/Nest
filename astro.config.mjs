@@ -8,8 +8,16 @@ export default defineConfig({
   // dev mode
   site: 'http://localhost:4321',
 
+  // 允许反向代理域名（如 Cloudflare Tunnel 的 *.trycloudflare.com）访问开发服务器
+  // 也可改为数组：allowedHosts: ['localhost', '10.10.16.59', '*.trycloudflare.com']
+  // vite: {
+  //   server: {
+  //     allowedHosts: true,
+  //   }
+  // },
+
   // production mode
-  // site: 'https://image.idealclover.cn/projects/Homepage',
+  
 
   // mode: 不同的网站 cn/top/moe
   siteMode: "moe"

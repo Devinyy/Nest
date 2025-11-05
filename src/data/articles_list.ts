@@ -1,13 +1,13 @@
 export default [
   {
     title: "最新",
-    url: "https://idealclover.top/articles.html",
+    url: `/articles.html`, 
     articles: [
       {
         cover: "",
         title: "再赴一场盛夏：写给下一个一年",
         subdesc: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        url: "https://idealclover.top/archives/644",
+        url: "https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         time: "2025.08.31",
         views: 100,
       },
@@ -15,7 +15,7 @@ export default [
         cover: "/icons/introduction.png",
         title: "再赴一场盛夏：写给下一个二年",
         subdesc: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        url: "https://idealclover.top/archives/644",
+        url: "https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         time: "2025.08.31",
         views: 200,
       },
@@ -23,7 +23,7 @@ export default [
         cover: "",
         title: "再赴一场盛夏：写给下一个三年",
         subdesc: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        url: "https://idealclover.top/archives/644",
+        url: "https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         time: "2025.08.31",
         views: 300,
       },
@@ -31,7 +31,7 @@ export default [
         cover: "/icons/introduction.png",
         title: "再赴一场盛夏：写给下一个四年",
         subdesc: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        url: "https://idealclover.top/archives/644",
+        url: "https://xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         time: "2025.08.31",
         views: 400,
       }
