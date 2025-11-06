@@ -12,7 +12,7 @@ export default defineConfig({
   // 也可改为数组：allowedHosts: ['localhost', '10.10.16.59', '*.trycloudflare.com']
   vite: {
     server: {
-      allowedHosts: ['localhost', '10.10.16.59', 'attract-diego-corrected-organisations.trycloudflare.com'],
+      allowedHosts: true,
     }
   },
 
