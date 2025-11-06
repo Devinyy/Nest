@@ -23,8 +23,8 @@ export default {
   blogCard: {
     title: "博客",
     desc: "记录技术/生活/随想/游戏/旅行/摄影",
-    subdesc: "https://xxxxxxxxxxx",
-    url: "https://xxxxxxxxxxx",
+    subdesc: "blog",
+    url: "/blog",
     btnText: "去逛逛 · 历史文章",
     bgStyle:
       "bg-[#9eb4ca] shadow-[#9eb4ca]/75 hover:bg-[#9eb4ca]/75 hover:shadow-[#9eb4ca]",

@@ -1,11 +1,16 @@
 ---
 // 可选：通过 props 控制是否显示登录注册
-const { showAuth = false } = Astro.props;
+// 新增：showImmediately 开关，true 时无需滑动直接显示导航栏（默认 false）
+const { showAuth = false, showImmediately = false } = Astro.props;
 ---
 
 <header
   id="stickyNav"
-  class="fixed top-0 left-0 right-0 z-50 border-b border-gray-800 bg-[#0f1115]/80 backdrop-blur-sm transition-transform duration-300 ease-out -translate-y-full opacity-0 pointer-events-none"
+  data-show-immediately={String(showImmediately)}
+  class:list={[
+    "fixed top-0 left-0 right-0 z-50 border-b border-gray-800 bg-[#0f1115]/80 backdrop-blur-sm transition-transform duration-300 ease-out",
+    showImmediately ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none",
+  ]}
 >
   <div class="max-w-screen-2xl mx-auto px-2 xs:px-5 lg:px-10">
     <nav class="flex items-center justify-between h-12">
@@ -14,6 +19,7 @@ const { showAuth = false } = Astro.props;
         <a href="/" class="text-white font-semibold">Devin's Nest</a>
         <a href="/" class="hidden sm:inline text-gray-300 hover:text-white">首页</a>
         <a href="/blog" class="hidden sm:inline text-gray-300 hover:text-white">博客</a>
+        <a href="/funny" class="hidden sm:inline text-gray-300 hover:text-white">Funny</a>
         <a href="/about" class="hidden sm:inline text-gray-300 hover:text-white">关于</a>
         <a href="/contact" class="hidden sm:inline text-gray-300 hover:text-white">联系</a>
       </div>
@@ -47,6 +53,7 @@ const { showAuth = false } = Astro.props;
       <div class="flex items-center gap-4 text-sm">
         <a href="/" class="text-gray-300 hover:text-white">首页</a>
         <a href="/blog" class="text-gray-300 hover:text-white">博客</a>
+        <a href="/funny" class="text-gray-300 hover:text-white">Funny</a>
         <a href="/about" class="text-gray-300 hover:text-white">关于</a>
         <a href="/contact" class="text-gray-300 hover:text-white">联系</a>
         {showAuth ? (
@@ -76,6 +83,7 @@ const { showAuth = false } = Astro.props;
   // 滚动超过 100vh 显示置顶导航
   document.addEventListener("DOMContentLoaded", () => {
     const nav = document.getElementById("stickyNav");
+    const showImmediately = nav?.getAttribute("data-show-immediately") === "true";
     const toggleNav = () => {
       if (!nav) return;
       const shouldShow = window.scrollY >= window.innerHeight;
@@ -87,8 +95,14 @@ const { showAuth = false } = Astro.props;
         nav.classList.remove("translate-y-0", "opacity-100");
       }
     };
-    toggleNav();
-    window.addEventListener("scroll", toggleNav, { passive: true });
+    if (showImmediately) {
+      // 直接显示，不依赖滚动
+      nav?.classList.remove("-translate-y-full", "opacity-0", "pointer-events-none");
+      nav?.classList.add("translate-y-0", "opacity-100");
+    } else {
+      toggleNav();
+      window.addEventListener("scroll", toggleNav, { passive: true });
+    }
 
     // 手机收纳按钮展开/收起
     const panel = document.getElementById("mobilePanel");

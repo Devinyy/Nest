@@ -1,0 +1,460 @@
+---
+import StickyNav from "../components/sticky_nav.astro";
+import CategoryIcon from "../components/category_icon.astro";
+import timeline from "../data/blog_timeline";
+import type { TimelineGroup, TimelineItem } from "../data/blog_timeline";
+import { categories } from "../data/blog_category";
+import { hotTags } from "../data/blog_category";
+import type { BlogCategory } from "../data/blog_category";
+const blogTimeline: TimelineGroup[] = timeline;
+const timelineCount = blogTimeline.reduce((sum, g) => sum + g.items.length, 0);
+import { categoryArticles } from "../data/articles_list";
+import type { ArticleItem } from "../data/articles_list";
+
+// 为浏览器 window 增加类型声明，提供 __categoryArticles__ 挂载点
+declare global {
+  interface Window {
+    __categoryArticles__: Record<string, ArticleItem[]>;
+  }
+}
+
+// 使用 CategoryIcon 组件渲染 SVG 图标（不使用 emoji）
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="black">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Devin's Nest</title>
+    <meta name="description" content="记录技术/生活/旅行/摄影等博客文章" />
+    <link
+      rel="preload"
+      href="/fonts/MaoKenZhuYuanTi.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
+    <style>
+      @font-face {
+        font-family: "MaokenZhuyuanTi";
+        src: url(/fonts/MaoKenZhuYuanTi.ttf);
+        font-display: swap;
+      }
+      body {
+        font-family: "MaokenZhuyuanTi";
+      }
+      /* 时间线：左侧竖线与节点样式 */
+      .timeline {
+        position: relative;
+        padding-left: 1.25rem; /* 20px */
+        border-left: 2px solid rgba(255,255,255,0.08);
+      }
+      .timeline-item {
+        position: relative;
+        padding-left: 1rem; /* 16px */
+        margin-bottom: 0.75rem; /* 12px */
+      }
+      .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -0.39rem;
+        top: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 9999px;
+        background-color: rgb(16 185 129); /* emerald-500 */
+        box-shadow: 0 0 0 3px rgba(16,185,129,0.25);
+      }
+    </style>
+  </head>
+  <body class="bg-base-100">
+    <StickyNav showImmediately={true} />
+
+    <main class="max-w-screen-2xl pt-20 mx-auto px-3 xs:px-5 lg:px-10 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- 左侧：时间线列表 -->
+        <section class="lg:col-span-2">
+          <div id="timeline-view" class="card rounded-2xl shadow-xl bg-neutral">
+            <div class="card-body">
+              <h1 class="text-2xl md:text-3xl font-bold mb-2">博客时间线</h1>
+              <p class="text-gray-400 mb-4">记录那些让人心动的瞬间与思考</p>
+
+              {blogTimeline.map((group: TimelineGroup) => (
+                <div class="mb-6" data-year-group>
+                  <h2 class="text-xl md:text-2xl font-semibold text-emerald-400 mb-2">{group.year} 年</h2>
+                  <div class="timeline">
+                    {group.items.map((it: TimelineItem) => (
+                      <div class="timeline-item" data-category={it.category ?? ""} data-tags={(it.tags ?? []).join(",")}>
+                        <div class="flex items-start gap-3 text-sm md:text-base">
+                          <span class="text-gray-400 w-16 shrink-0">{it.time}</span>
+                          <a href={it.url ?? "#"} class="hover:text-white text-gray-200">{it.title}</a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <!-- 分类文章列表视图（初始隐藏） -->
+          <div id="category-list-view" class="card rounded-2xl shadow-xl bg-neutral hidden">
+            <div class="card-body">
+              <div class="flex items-center justify-between mb-2">
+                <h1 class="text-2xl md:text-3xl font-bold"><span id="category-list-title">分类文章</span></h1>
+                <button id="back-to-timeline" class="btn btn-sm btn-outline">返回时间线</button>
+              </div>
+              <div id="category-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+              <div id="category-pager" class="flex items-center justify-center gap-2 pt-2">
+                <button class="btn btn-xs" data-page-prev>上一页</button>
+                <span class="text-xs text-gray-400" id="pager-info">第 1 页</span>
+                <button class="btn btn-xs" data-page-next>下一页</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 右侧：分类 & 热门标签 -->
+        <aside class="lg:col-span-1 flex flex-col gap-6">
+          <!-- 分类 -->
+          <div class="card rounded-2xl shadow-xl bg-neutral">
+            <div class="card-body">
+              <h3 class="text-lg md:text-xl font-bold">分类</h3>
+              <div class="divider my-2"></div>
+              <ul class="space-y-2" id="categoryList">
+                {categories.map((c: BlogCategory, idx) => (
+                  <li>
+                    <a href={c.href ?? "#"} data-category-link={c.name} class="block px-3 py-2 rounded-lg hover:bg-base-300">
+                      <div class="flex items-center justify-between">
+                        <span class="font-medium text-gray-200" data-category-text>{c.name}</span>
+                        <span data-category-icon class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 bg-base-300">
+                          <CategoryIcon name={c.icon} class="w-5 h-5" />
+                        </span>
+                      </div>
+                      {c.name === '时间线' ? (
+                        <p class="text-xs text-gray-500 mt-1">{timelineCount}条记录</p>
+                      ) : (
+                        c.count !== undefined ? (
+                          <p class="text-xs text-gray-500 mt-1">{c.count}篇文章</p>
+                        ) : null
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <!-- 热门标签 -->
+          <div class="card rounded-2xl shadow-xl bg-neutral">
+            <div class="card-body">
+              <h3 class="text-lg md:text-xl font-bold mb-2">热门标签</h3>
+              <div class="flex flex-wrap gap-2" id="tagList">
+                {hotTags.map((t) => (
+                  <a href="#" data-tag-link={t} class="px-3 py-1 rounded-full bg-base-300 text-gray-200 hover:bg-base-200">{t}</a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // 视图状态
+        let activeCategory = null; // 当前选中的分类名称
+        let activeTag = null; // 当前选中的标签名称
+        let currentPage = 1;
+        const pageSize = 6;
+
+        const timelineView = document.getElementById('timeline-view');
+        const listView = document.getElementById('category-list-view');
+        const listTitle = document.getElementById('category-list-title');
+        const listContainer = document.getElementById('category-list-container');
+        const pager = document.getElementById('category-pager');
+        const pagerInfo = document.getElementById('pager-info');
+        const backBtn = document.getElementById('back-to-timeline');
+
+        function showTimelineView() {
+          if (timelineView instanceof HTMLElement) timelineView.classList.remove('hidden');
+          if (listView instanceof HTMLElement) listView.classList.add('hidden');
+        }
+        function showListView() {
+          if (timelineView instanceof HTMLElement) timelineView.classList.add('hidden');
+          if (listView instanceof HTMLElement) listView.classList.remove('hidden');
+        }
+
+        // 当展示时间线视图时，将“时间线”分类高亮为绿色
+        function setTimelineActiveCategory() {
+          activeCategory = '时间线';
+          document.querySelectorAll('[data-category-link]').forEach((el) => {
+            const isActive = el.getAttribute('data-category-link') === activeCategory;
+            const text = el.querySelector('[data-category-text]');
+            if (text) {
+              text.classList.toggle('text-emerald-400', !!isActive);
+              text.classList.toggle('text-gray-200', !isActive);
+            }
+            const icon = el.querySelector('[data-category-icon]');
+            if (icon) {
+              icon.classList.toggle('text-emerald-400', !!isActive);
+              icon.classList.toggle('bg-emerald-500/25', !!isActive);
+              icon.classList.toggle('text-gray-400', !isActive);
+              icon.classList.toggle('bg-base-300', !isActive);
+            }
+          });
+        }
+
+        function normalizeTag(tag) {
+          return String(tag || '').trim();
+        }
+
+        function getAllArticles() {
+          const data = window.__categoryArticles__ || {};
+          const all = [];
+          Object.keys(data).forEach((k) => {
+            const arr = data[k] || [];
+            arr.forEach((it) => all.push(it));
+          });
+          return all;
+        }
+
+        function getFilteredArticles() {
+          const tag = normalizeTag(activeTag);
+          if (tag) {
+            return getAllArticles().filter((a) => (a.tags || []).includes(tag));
+          }
+          if (activeCategory) {
+            const data = window.__categoryArticles__ || {};
+            return data[activeCategory] || [];
+          }
+          return [];
+        }
+
+        function renderList() {
+          const items = getFilteredArticles();
+          const total = items.length;
+          const pages = Math.max(1, Math.ceil(total / pageSize));
+          if (currentPage > pages) currentPage = pages;
+          const start = (currentPage - 1) * pageSize;
+          const slice = items.slice(start, start + pageSize);
+
+          if (listTitle) {
+            listTitle.textContent = activeTag ? `标签：${activeTag}` : `分类：${activeCategory || ''}`;
+          }
+
+          if (listContainer) {
+            const html = slice.map((a) => {
+              const cover = a.cover ? `<img src="${a.cover}" alt="" class="w-full h-full object-cover"/>` : '';
+              return `
+                <a href="${a.url}" class="group rounded-xl bg-base-200 p-3 hover:bg-base-300 transition-colors">
+                  <div class="aspect-video w-full rounded-lg bg-base-300 mb-2 overflow-hidden">${cover}</div>
+                  <div class="space-y-1">
+                    <div class="text-sm text-gray-400">${a.time || ''}</div>
+                    <div class="font-medium text-white group-hover:text-emerald-400">${a.title}</div>
+                    ${a.subdesc ? `<div class="text-xs text-gray-300">${a.subdesc}</div>` : ''}
+                  </div>
+                </a>
+              `;
+            }).join('');
+            listContainer.innerHTML = html;
+          }
+
+          if (pagerInfo) {
+            pagerInfo.textContent = `第 ${currentPage} / ${Math.max(1, pages)} 页`;
+          }
+
+          // 控制分页按钮禁用
+          if (pager instanceof HTMLElement) {
+            const prevBtn = pager.querySelector('[data-page-prev]');
+            const nextBtn = pager.querySelector('[data-page-next]');
+            if (prevBtn instanceof HTMLElement) prevBtn.toggleAttribute('disabled', currentPage <= 1);
+            if (nextBtn instanceof HTMLElement) nextBtn.toggleAttribute('disabled', currentPage >= pages);
+          }
+        }
+
+        // 分类点击：列表/时间线切换
+        document.querySelectorAll('[data-category-link]').forEach((a) => {
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const name = a.getAttribute('data-category-link');
+            const wasSelected = (activeCategory === name);
+            activeCategory = wasSelected ? null : name;
+
+            // 更新选中态样式
+            document.querySelectorAll('[data-category-link]').forEach((el) => {
+              const isActive = el.getAttribute('data-category-link') === activeCategory;
+              const text = el.querySelector('[data-category-text]');
+              if (text) {
+                text.classList.toggle('text-emerald-400', !!isActive);
+                text.classList.toggle('text-gray-200', !isActive);
+              }
+              const icon = el.querySelector('[data-category-icon]');
+              if (icon) {
+                icon.classList.toggle('text-emerald-400', !!isActive);
+                icon.classList.toggle('bg-emerald-500/25', !!isActive);
+                icon.classList.toggle('text-gray-400', !isActive);
+                icon.classList.toggle('bg-base-300', !isActive);
+              }
+            });
+
+            // 点击“时间线” -> 回到时间线视图并高亮“时间线”分类
+            if (name === '时间线') {
+              activeTag = null;
+              showTimelineView();
+              setTimelineActiveCategory();
+              return;
+            }
+
+            // 二次点击同一分类 -> 返回时间线并高亮“时间线”分类
+            if (wasSelected) {
+              activeTag = null;
+              showTimelineView();
+              setTimelineActiveCategory();
+              return;
+            }
+
+            // 进入列表视图（按分类）
+            activeTag = null; // 清空标签选择
+            document.querySelectorAll('[data-tag-link]').forEach((el) => {
+              el.classList.remove('bg-emerald-500/25');
+              el.classList.remove('text-emerald-400');
+              el.classList.add('bg-base-300');
+            });
+            currentPage = 1;
+            renderList();
+            showListView();
+          });
+        });
+
+        // 标签点击：进入列表视图（按标签）
+        document.querySelectorAll('[data-tag-link]').forEach((a) => {
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const name = a.getAttribute('data-tag-link');
+            const wasSelected = (activeTag === name);
+            activeTag = wasSelected ? null : name;
+
+            // 更新选中态样式
+            document.querySelectorAll('[data-tag-link]').forEach((el) => {
+              const isActive = el.getAttribute('data-tag-link') === activeTag;
+              el.classList.toggle('bg-emerald-500/25', !!isActive);
+              el.classList.toggle('bg-base-300', !isActive);
+            });
+
+            if (wasSelected) {
+              // 标签取消：回到时间线并高亮“时间线”分类
+              showTimelineView();
+              setTimelineActiveCategory();
+              return;
+            }
+
+            // 进入列表视图（标签）
+            activeCategory = null; // 清空分类选中样式
+            document.querySelectorAll('[data-category-link]').forEach((el) => {
+              const text = el.querySelector('[data-category-text]');
+              if (text) {
+                text.classList.remove('text-emerald-400');
+                text.classList.add('text-gray-200');
+              }
+              const icon = el.querySelector('[data-category-icon]');
+              if (icon) {
+                icon.classList.remove('text-emerald-400', 'bg-emerald-500/25');
+                icon.classList.add('text-gray-400', 'bg-base-300');
+              }
+            });
+
+            currentPage = 1;
+            renderList();
+            showListView();
+          });
+        });
+
+        // 分页按钮
+        if (pager instanceof HTMLElement) {
+          const prevBtn = pager.querySelector('[data-page-prev]');
+          const nextBtn = pager.querySelector('[data-page-next]');
+          prevBtn && prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentPage > 1) {
+              currentPage -= 1;
+              renderList();
+            }
+          });
+          nextBtn && nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            currentPage += 1;
+            renderList();
+          });
+        }
+
+        // 返回时间线
+        backBtn && backBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          activeCategory = null;
+          activeTag = null;
+          currentPage = 1;
+          // 清空样式
+          document.querySelectorAll('[data-category-link]').forEach((el) => {
+            const text = el.querySelector('[data-category-text]');
+            if (text) {
+              text.classList.remove('text-emerald-400');
+              text.classList.add('text-gray-200');
+            }
+            const icon = el.querySelector('[data-category-icon]');
+            if (icon) {
+              icon.classList.remove('text-emerald-400', 'bg-emerald-500/25');
+              icon.classList.add('text-gray-400', 'bg-base-300');
+            }
+          });
+          document.querySelectorAll('[data-tag-link]').forEach((el) => {
+            el.classList.remove('bg-emerald-500/25');
+            el.classList.add('bg-base-300');
+          });
+          showTimelineView();
+          // 时间线视图：高亮“时间线”分类
+          setTimelineActiveCategory();
+        });
+
+        // 注入分类文章数据（供前端脚本使用）
+        window.__categoryArticles__ = /** @type {Record<string, any[]>} */ ({});
+        try {
+          // 通过 inline JSON 注入
+          const dataScript = document.getElementById('__category_articles_data');
+          if (dataScript) {
+            const parsed = JSON.parse(dataScript.textContent || '{}');
+            window.__categoryArticles__ = parsed || {};
+          }
+        } catch (_) {}
+
+        // 初始：时间线视图，并高亮“时间线”分类
+        showTimelineView();
+        setTimelineActiveCategory();
+      });
+    </script>
+
+    <!-- 注入分类文章数据（JSON） -->
+    <script id="__category_articles_data" type="application/json">
+      {JSON.stringify(categoryArticles)}
+    </script>
+  </body>
+</html>
