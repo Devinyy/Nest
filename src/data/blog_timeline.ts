@@ -11,7 +11,7 @@ const timeline: TimelineGroup[] = [
   {
     year: 2025,
     items: [
-      { time: "08-31", title: "再赴一场盛夏：写给下一个五年", category: "生活", tags: ["阅读"] },
+      { time: "08-31", title: "再赴一场盛夏：写给下一个五年", category: "生活", tags: ["阅读"], url: "/blog/detail" },
       { time: "03-07", title: "热爱是一种向上的力量", category: "生活", tags: ["阅读"] },
       { time: "04-20", title: "春日短途：山海之间", category: "旅行", tags: ["摄影"] },
       { time: "02-14", title: "前端性能优化实践：度量与改进", category: "技术", tags: ["JavaScript", "Performance"] },

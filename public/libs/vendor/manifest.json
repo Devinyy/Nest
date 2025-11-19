@@ -1,0 +1,17 @@
+{
+  "marked": {
+    "version": "12.0.2"
+  },
+  "hljs_css": {
+    "version": "11.9.0"
+  },
+  "mermaid": {
+    "version": "10.9.0"
+  },
+  "katex_css": {
+    "version": "0.16.9"
+  },
+  "katex_auto": {
+    "version": "0.16.9"
+  }
+}
