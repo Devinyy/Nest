@@ -132,19 +132,6 @@ Markdown将文本转换为 HTML。
 
 *[HTML]:   超文本标记语言
 
-## KaTeX数学公式
-
-您可以使用渲染LaTeX数学表达式 [KaTeX](https://khan.github.io/KaTeX/):
-
-Gamma公式展示 $\Gamma(n) = (n-1)!\quad\forall
-n\in\mathbb N$ 是通过欧拉积分
-
-$$
-\Gamma(z) = \int_0^\infty t^{z-1}e^{-t}dt\,.
-$$
-
-> 你可以找到更多关于的信息 **LaTeX** 数学表达式[here][1].
-
 ## 新的甘特图功能，丰富你的文章
 
 ```mermaid
@@ -186,23 +173,6 @@ C --> D
 ```
 
 - 关于 **Mermaid** 语法，参考 [这儿][3],
-
-## FLowchart流程图
-
-我们依旧会支持flowchart的流程图：
-```mermaid
-flowchat
-st=>start: 开始
-e=>end: 结束
-op=>operation: 我的操作
-cond=>condition: 确认？
-
-st->op->cond
-cond(yes)->e
-cond(no)->op
-```
-
-- 关于 **Flowchart流程图** 语法，参考 [这儿][4].
 
 ## 导出与导入
 

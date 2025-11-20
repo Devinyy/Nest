@@ -16,5 +16,17 @@
   },
   "hljs_js": {
     "version": "11.9.0"
+  },
+  "ganttDiagramJs": {
+    "version": "10.9.0"
+  },
+  "sequenceDiagramJs": {
+    "version": "10.9.0"
+  },
+  "flowDiagramV2Js": {
+    "version": "10.9.0"
+  },
+  "mermaidJs": {
+    "version": "10.9.0"
   }
 }

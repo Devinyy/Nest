@@ -1,9 +1,3 @@
-// Lightweight Markdown renderer with optional highlight, mermaid, and math (KaTeX)
-// Usage:
-//   import('/libs/md-renderer.js').then(({ renderMarkdownToElement }) => {
-//     renderMarkdownToElement(text, container, { highlight: true, mermaid: true, math: true, sanitize: true });
-//   });
-
 function resolveUrl(localUrl, cdnUrl) {
   return fetch(localUrl, { method: 'HEAD' })
     .then((res) => (res.ok ? localUrl : cdnUrl))
@@ -165,7 +159,10 @@ export async function renderMarkdownToElement(text, el, options = {}) {
             if (parent) parent.replaceWith(div);
             ready.push(div);
           });
-          const mmdUrl = await resolveUrl('/libs/vendor/mermaid.esm.min.mjs', 'https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.esm.min.mjs');
+          const mmdUrl = await resolveUrl(
+            '/libs/vendor/mermaid.esm.min.mjs',
+            'https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs'
+          );
           const mermaid = await import(mmdUrl);
           mermaid.default.initialize({ startOnLoad: false });
           mermaid.default.run({ nodes: ready });
