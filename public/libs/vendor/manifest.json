@@ -13,5 +13,8 @@
   },
   "katex_auto": {
     "version": "0.16.9"
+  },
+  "hljs_js": {
+    "version": "11.9.0"
   }
 }

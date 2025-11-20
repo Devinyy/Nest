@@ -4,24 +4,47 @@ import { minify } from "terser";
 import config from "../astro.config.mjs";
 import https from "https";
 
-async function download(url, dest) {
+async function download(url, dest, timeoutMs = 10000) {
   await new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dest);
-    https
-      .get(url, (res) => {
-        if (res.statusCode !== 200) {
-          file.close();
-          fs.rmSync(dest, { force: true });
-          return reject(new Error(`Download failed ${res.statusCode}: ${url}`));
-        }
-        res.pipe(file);
-        file.on("finish", () => file.close(resolve));
-      })
-      .on("error", (err) => {
+    const req = https.get(url, (res) => {
+      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        // Follow simple redirects
+        download(res.headers.location, dest, timeoutMs).then(resolve).catch(reject);
+        return;
+      }
+      if (res.statusCode !== 200) {
         try { file.close(); fs.rmSync(dest, { force: true }); } catch (_) {}
-        reject(err);
-      });
+        return reject(new Error(`Download failed ${res.statusCode}: ${url}`));
+      }
+      res.pipe(file);
+      file.on("finish", () => file.close(resolve));
+    });
+    req.on("error", (err) => {
+      try { file.close(); fs.rmSync(dest, { force: true }); } catch (_) {}
+      reject(err);
+    });
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error(`Timeout after ${timeoutMs}ms for ${url}`));
+    });
   });
+}
+
+async function downloadWithFallback(urls, dest, timeoutMs = 10000) {
+  const candidates = Array.isArray(urls) ? urls : [urls];
+  let lastErr;
+  for (const u of candidates) {
+    try {
+      await download(u, dest, timeoutMs);
+      const stat = fs.statSync(dest);
+      if (!stat || stat.size === 0) throw new Error("Downloaded empty file");
+      return; // success
+    } catch (err) {
+      lastErr = err;
+      console.warn(`Download failed from ${u}: ${err?.message}`);
+    }
+  }
+  throw lastErr || new Error("All download sources failed");
 }
 
 /**
@@ -34,13 +57,18 @@ async function ensureVendors() {
   if (!fs.existsSync(vendorDir)) fs.mkdirSync(vendorDir, { recursive: true });
 
   const manifest = {
-    marked: { file: "marked.esm.js", url: "https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js" },
-    dompurify: { file: "dompurify.es.js", url: "https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.js" },
-    hljs_js: { file: "highlight.min.js", url: "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/highlight.min.js" },
-    hljs_css: { file: "highlight.github-dark.min.css", url: "https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css" },
-    mermaid: { file: "mermaid.esm.min.mjs", url: "https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.esm.min.mjs" },
-    katex_css: { file: "katex.min.css", url: "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" },
-    katex_auto: { file: "auto-render.mjs", url: "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.mjs" },
+    marked: { file: "marked.esm.js", url: "https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js", version: "12.0.2" },
+    // Use ESM builds from reliable CDNs
+    // DOMPurify ESM via unpkg module wrapper to avoid jsDelivr 404
+    dompurify: { file: "dompurify.es.js", url: "https://unpkg.com/dompurify@3.0.8/dist/purify.min.js?module", version: "3.0.8" },
+    hljs_js: { file: "highlight.min.js", url: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js", version: "11.9.0" },
+    hljs_css: { file: "highlight.github-dark.min.css", url: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css", version: "11.9.0" },
+    mermaid: { file: "mermaid.esm.min.mjs", urls: [
+      "https://unpkg.com/mermaid@10.9.0/dist/mermaid.esm.min.mjs",
+      "https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.esm.min.mjs",
+    ], version: "10.9.0" },
+    katex_css: { file: "katex.min.css", url: "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css", version: "0.16.9" },
+    katex_auto: { file: "auto-render.mjs", url: "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.mjs", version: "0.16.9" },
   };
 
   const manifestPath = path.join(vendorDir, "manifest.json");
@@ -52,14 +80,17 @@ async function ensureVendors() {
   const forceUpdate = process.env.VENDOR_UPDATE === "1";
 
   for (const key of Object.keys(manifest)) {
-    const { file, url, version } = manifest[key];
+    const { file, url, urls, version } = manifest[key];
     const dest = path.join(vendorDir, file);
-    console.log(`Checking vendor: ${dest}`, fs.existsSync(dest));
-    const needDownload = forceUpdate || !fs.existsSync(dest);
+    const exists = fs.existsSync(dest);
+    const size = exists ? (fs.statSync(dest).size || 0) : 0;
+    const valid = exists && size > 1024; // 文件必须非空且大于 1KB 才视为有效
+    console.log(`Checking vendor: ${dest}`, exists, `size=${size}`);
+    const needDownload = forceUpdate || !valid;
     if (!needDownload) continue;
     try {
       console.log(`Ensuring vendor: ${file}@${version}`);
-      await download(url, dest);
+      await downloadWithFallback(urls || url, dest, 10000);
       current[key] = { version };
     } catch (err) {
       console.warn(`Failed to download ${file}:`, err?.message);

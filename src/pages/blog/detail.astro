@@ -232,7 +232,7 @@ const articleCover = "/icons/introduction.png";
           const { renderMarkdownToElement } = await import('/libs/md-renderer.js');
           await renderMarkdownToElement(articleMarkdown, mdEl, {
             // 先禁用库内高亮，改为在行号美化后自定义高亮
-            highlight: false,
+            // highlight: false,
             mermaid: true,
             math: true,
             sanitize: true,
@@ -377,7 +377,8 @@ const articleCover = "/icons/introduction.png";
           `);
           let hljs;
           try {
-            const hljsUrl = await resolveLocal('/libs/vendor/highlight.min.js', 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/highlight.min.js');
+            // Use cdnjs ESM path for highlight core to avoid jsDelivr NPM /es 404
+            const hljsUrl = await resolveLocal('/libs/vendor/highlight.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/es/highlight.min.js');
             const mod = await import(hljsUrl);
             hljs = mod.default || mod;
           } catch(_) { hljs = null; }

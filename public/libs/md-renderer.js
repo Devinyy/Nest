@@ -45,10 +45,15 @@ export async function renderMarkdownToElement(text, el, options = {}) {
     // Sanitize
     if (opts.sanitize) {
       try {
-        const dpUrl = await resolveUrl('/libs/vendor/dompurify.es.js', 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.js');
-        const { sanitize } = await import(dpUrl);
-        // 保留用于扩展标记的标签：kbd/mark/sub/sup/section
-        html = sanitize(html, { ADD_TAGS: ['kbd', 'mark', 'sub', 'sup', 'section'] });
+        // Use unpkg module wrapper to get an ESM build
+        const dpUrl = await resolveUrl('/libs/vendor/dompurify.es.js', 'https://unpkg.com/dompurify@3.0.8/dist/purify.min.js?module');
+        const mod = await import(dpUrl);
+        const DP = mod.default || mod;
+        const sanitizeFn = DP.sanitize || mod.sanitize;
+        if (typeof sanitizeFn === 'function') {
+          // 保留用于扩展标记的标签：kbd/mark/sub/sup/section
+          html = sanitizeFn(html, { ADD_TAGS: ['kbd', 'mark', 'sub', 'sup', 'section'] });
+        }
       } catch (_) {/* ignore sanitize failure */}
     }
 
@@ -136,7 +141,8 @@ export async function renderMarkdownToElement(text, el, options = {}) {
       try {
         const cssUrl = await resolveUrl('/libs/vendor/highlight.github-dark.min.css', 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css');
         await ensureCss('hljs-style', cssUrl);
-        const hljsUrl = await resolveUrl('/libs/vendor/highlight.min.js', 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/es/highlight.min.js');
+        // Use cdnjs ESM path for highlight core
+        const hljsUrl = await resolveUrl('/libs/vendor/highlight.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/es/highlight.min.js');
         const hljs = await import(hljsUrl);
         el.querySelectorAll('pre code').forEach((block) => {
           try { hljs.default.highlightElement(block); } catch (_) {}
