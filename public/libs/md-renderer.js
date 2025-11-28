@@ -45,8 +45,11 @@ export async function renderMarkdownToElement(text, el, options = {}) {
         const DP = mod.default || mod;
         const sanitizeFn = DP.sanitize || mod.sanitize;
         if (typeof sanitizeFn === 'function') {
-          // 保留用于扩展标记的标签：kbd/mark/sub/sup/section
-          html = sanitizeFn(html, { ADD_TAGS: ['kbd', 'mark', 'sub', 'sup', 'section'] });
+          // 保留用于扩展标记的标签：kbd/mark/sub/sup/section，并允许表格单元格的对齐属性
+          html = sanitizeFn(html, {
+            ADD_TAGS: ['kbd', 'mark', 'sub', 'sup', 'section'],
+            ADD_ATTR: ['align']
+          });
         }
       } catch (_) {/* ignore sanitize failure */}
     }

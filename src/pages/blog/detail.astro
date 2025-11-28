@@ -79,6 +79,11 @@ const articleCover = "/icons/introduction.png";
       }
       .article pre code { display: block; overflow-x: auto; }
 
+      /* 表格列对齐（GFM 表格 `|:--|--:|:--:|` 对齐规则）*/
+      .article table th[align="left"], .article table td[align="left"] { text-align: left; }
+      .article table th[align="center"], .article table td[align="center"] { text-align: center; }
+      .article table th[align="right"], .article table td[align="right"] { text-align: right; }
+
 
       .article .code-header {
         display: flex; align-items: center; justify-content: space-between;
@@ -116,6 +121,12 @@ const articleCover = "/icons/introduction.png";
       .article .code-dots .dot-red { background-color: #ef4444; }
       .article .code-dots .dot-yellow { background-color: #f59e0b; }
       .article .code-dots .dot-green { background-color: #10b981; }
+
+      /* 修复：使用 global 选择器确保对动态插入的 Markdown 表格生效 */
+      :global(.article table th[align="left"]), :global(.article table td[align="left"]) { text-align: left !important; }
+      :global(.article table th[align="center"]), :global(.article table td[align="center"]) { text-align: center !important; }
+      :global(.article table th[align="right"]), :global(.article table td[align="right"]) { text-align: right !important; }
+
       /* 移动端适配：压缩间距与更友好的滚动 */
       @media (max-width: 640px) {
         /* 代码块整体更紧凑 */
@@ -139,7 +150,7 @@ const articleCover = "/icons/introduction.png";
 
     <main class="max-w-screen-2xl mx-auto px-3 xs:px-5 lg:px-10 pt-20 pb-12">
       <!-- 顶部信息区 -->
-      <section class="card rounded-2xl shadow-xl bg-white/5 backdrop-blur-md border border-white/5 overflow-hidden">
+      <section class="card rounded-2xl shadow-xl bg-white/5 backdrop-blur-md border border-white/5">
         <div class="card-body">
           <div class="flex items-start gap-4">
             <img src={articleCover} alt={articleTitle} class="w-16 h-16 rounded-xl object-cover" />
@@ -147,10 +158,10 @@ const articleCover = "/icons/introduction.png";
               <h1 class="text-3xl md:text-4xl font-bold mb-2">{articleTitle}</h1>
               <p class="text-gray-400 mb-3">{articleDesc}</p>
               <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+                <span class="text-gray-400">{articleDate}</span>
                 <span class="px-2 py-1 rounded-lg bg-base-300 text-gray-200 flex items-center gap-1">
                   <CategoryIcon name="palette" class="w-4 h-4" />{articleCategory}
                 </span>
-                <span class="text-gray-400">{articleDate}</span>
                 {articleTags.map((t) => (
                   <span class="px-2 py-1 rounded-full bg-base-300 text-gray-200">{t}</span>
                 ))}
