@@ -164,7 +164,7 @@ declare global {
                         <div class={`timeline-item ${isRecentSixMonths ? 'is-current-year' : ''}`} data-category={it.category ?? ""} data-tags={(it.tags ?? []).join(",")}>
                           <div class="flex items-start gap-3 text-sm md:text-base">
                             <span class="text-gray-400 w-16 shrink-0">{it.time}</span>
-                            <a href={it.url ?? "#"} class="hover:text-white text-gray-200">{it.title}</a>
+                            <a href={`/blog/detail/?id=${it.blogId}`} class="hover:text-white text-gray-200">{it.title}</a>
                           </div>
                         </div>
                       );
