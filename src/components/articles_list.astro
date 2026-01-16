@@ -3,7 +3,7 @@ import articlesList from "../data/articles_list";
 ---
 
 <div
-  class="card max-lg:card-compact rounded-2xl shadow-xl shadow-accent hover:bg-primary-focus hover:shadow-gray-500 bg-primary w-full lg:w-[54rem] min-h-[6rem] mb-8"
+  class="card max-lg:card-compact rounded-2xl shadow-xl shadow-accent hover:bg-primary-focus hover:shadow-gray-500 bg-primary w-full lg:max-w-[54rem] min-h-[6rem] mb-8"
 >
   <div class="card-body">
     <!-- 博客文章分类标题 -->
@@ -40,39 +40,40 @@ import articlesList from "../data/articles_list";
                   
                 )}
 
-                <div class="card-body">
-                  <!-- 元信息行：日期、（可选）阅读数 -->
-                  <div class="flex justify-between items-center gap-6 text-sm text-gray-400">
-                    <span class="inline-flex items-center gap-2">
-                      <span class="i-calendar">📅</span>
-                      {article.time}
-                    </span>
-                    {article.views && (
-                      <span class="inline-flex items-center gap-2">
-                        <span class="i-eye">👁️</span>
-                        {article.views}
-                      </span>
-                    )}
-                  </div>
-
+                <div class="card-body p-3 sm:p-4">
                   <!-- 标题：移动端单行展示 -->
-                  <h3 class="text-sm sm:text-base md:text-xl font-bold mt-2 whitespace-nowrap">{article.title}</h3>
+                  <h3 class="text-sm sm:text-base md:text-lg font-bold truncate">{article.title}</h3>
 
                   <!-- 摘要（可选） -->
                   {article.subdesc && (
-                    <p class="mt-2 text-sm md:text-base text-gray-300 line-clamp-2 overflow-hidden">{article.subdesc}</p>
+                    <p class="mt-1 text-xs sm:text-sm text-gray-300 line-clamp-2 overflow-hidden">{article.subdesc}</p>
                   )}
 
-                  <!-- 继续阅读链接 -->
-                  <div class="card-actions justify-end">
+                  <!-- 底部栏：元信息 + 按钮 -->
+                  <div class="flex justify-between items-center mt-2">
+                    <!-- 元信息 -->
+                    <div class="flex items-center gap-3 text-xs text-gray-400">
+                      <span class="inline-flex items-center gap-1">
+                        <span class="i-calendar">�</span>
+                        {article.time}
+                      </span>
+                      {article.views && (
+                        <span class="inline-flex items-center gap-1">
+                          <span class="i-eye">👁️</span>
+                          {article.views}
+                        </span>
+                      )}
+                    </div>
+
+                    <!-- 按钮 -->
                     <button
                       class:list={[
-                        "btn btn-sm rounded-xl border-0",
+                        "btn btn-xs sm:btn-sm rounded-lg border-0",
                         "bg-primary shadow-accent hover:bg-primary-focus hover:shadow-gray-500",
                         "text-white",
                       ]}
                     >
-                      开箱！📦
+                      开箱! 📦
                     </button>
                   </div>
                 </div>
