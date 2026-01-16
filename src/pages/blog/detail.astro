@@ -1,19 +1,46 @@
 ---
 import StickyNav from "../../components/sticky_nav.astro";
 import CategoryIcon from "../../components/category_icon.astro";
-import { categoryArticles } from "../../data/articles_list";
-import markdownRaw from "../../content/blog/web-design-pattern.md?raw";
+import { categoryArticles, type ArticleItem } from "../../data/articles_list";
 
-// 当前页面的标识（用于本地存储点赞/收藏/评论等交互）
-const slug = "web-design-pattern";
-const articleTitle = "现代 Web 设计的演进与最佳实践";
-const articleDesc = "样式与交互统一、舒适顺畅的设计范式整理";
-const articleCategory = "设计";
-const articleDate = "2025-08-31";
-const articleTags = ["CSS", "交互", "设计系统"];
-const articleCover = "/icons/introduction.png";
+// 支持通过查询参数渲染不同文章内容
+const url = new URL(Astro.request.url);
+const qp = url.searchParams;
+const slug = qp.get('slug') || 'web-design-pattern';
+const articleTitle = qp.get('title') || "现代 Web 设计的演进与最佳实践";
+const articleDesc = qp.get('desc') || "样式与交互统一、舒适顺畅的设计范式整理";
+const articleCategory = qp.get('category') || "设计";
+const articleDate = qp.get('date') || "2025-08-31";
+const articleTags = (qp.getAll('tag')?.length ? qp.getAll('tag') : (qp.get('tags')?.split(',').filter(Boolean) || ["CSS", "交互", "设计系统"])) as string[];
+const articleCover = qp.get('cover') || "/icons/introduction.png";
 
-// 文章正文通过外部 Markdown 文件（?raw）载入
+// 文章正文通过 slug 动态载入（支持 *.md 原文）
+let markdownRaw: string = "";
+const mdFiles = import.meta.glob("../../content/blog/*.md", { as: 'raw' });
+for (const [path, loader] of Object.entries(mdFiles)) {
+  if (path.endsWith(`/${slug}.md`)) {
+    markdownRaw = await loader();
+    break;
+  }
+}
+if (!markdownRaw) {
+  markdownRaw = `# 内容未找到\n\n未找到 slug 为 \`${slug}\` 的文章。`;
+}
+
+// 统一构建 detail 链接（用于相关文章等位置）
+const toDetailHref = (it: ArticleItem) => {
+  const s = (it as any).slug || 'web-design-pattern';
+  const params = new URLSearchParams({
+    slug: s,
+    title: it.title,
+    desc: it.subdesc || '',
+    category: it.category || articleCategory,
+    date: it.time || '',
+    cover: it.cover || ''
+  });
+  for (const t of (it.tags || [])) params.append('tag', t);
+  return `/blog/detail?${params.toString()}`;
+};
 ---
 
 <!doctype html>
@@ -142,15 +169,24 @@ const articleCover = "/icons/introduction.png";
         #toc { max-height: 50vh; overflow: auto; }
         #toc a { padding: 0.25rem 0.4rem; }
       }
+
+      /* 复用玻璃卡片样式，减少类名重复并统一视觉 */
+      .glass-card {
+        border-radius: 1rem;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      }
     </style>
   </head>
   <body class="bg-base-100">
-    <div class="reading-progress" id="readingProgress"></div>
+    <div class="reading-progress" id="readingProgress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="阅读进度"></div>
     <StickyNav showImmediately={true} />
 
     <main class="max-w-screen-2xl mx-auto px-3 xs:px-5 lg:px-10 pt-20 pb-12">
       <!-- 顶部信息区 -->
-      <section class="card rounded-2xl shadow-xl bg-white/5 backdrop-blur-md border border-white/5">
+      <section class="card glass-card">
         <div class="card-body">
           <div class="flex items-start gap-4">
             <img src={articleCover} alt={articleTitle} class="w-16 h-16 rounded-xl object-cover" />
@@ -166,9 +202,9 @@ const articleCover = "/icons/introduction.png";
                   <span class="px-2 py-1 rounded-full bg-base-300 text-gray-200">{t}</span>
                 ))}
                 <div class="ml-auto flex items-center gap-2">
-                  <button id="btn-like" class="btn btn-sm rounded-xl btn-outline">喜欢</button>
-                  <button id="btn-bookmark" class="btn btn-sm rounded-xl btn-outline">收藏</button>
-                  <button id="btn-share" class="btn btn-sm rounded-xl">分享</button>
+                  <button id="btn-like" class="btn btn-sm rounded-xl btn-outline" aria-label="喜欢文章" title="喜欢">喜欢</button>
+                  <button id="btn-bookmark" class="btn btn-sm rounded-xl btn-outline" aria-label="收藏文章" title="收藏">收藏</button>
+                  <button id="btn-share" class="btn btn-sm rounded-xl" aria-label="分享文章" title="分享">分享</button>
                 </div>
               </div>
             </div>
@@ -178,7 +214,7 @@ const articleCover = "/icons/introduction.png";
 
       <div class="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6 mt-6">
         <!-- 正文 -->
-        <article id="article" class="article card rounded-2xl shadow-xl bg-white/5 backdrop-blur-md border border-white/5">
+        <article id="article" class="article card glass-card">
           <div class="card-body prose prose-invert max-w-none">
             <div id="md-content"></div>
 
@@ -203,7 +239,7 @@ const articleCover = "/icons/introduction.png";
         </article>
 
         <!-- 目录（右侧） -->
-        <aside class="lg:col-span-1 card rounded-2xl shadow-xl bg-white/5 backdrop-blur-md border border-white/5">
+        <aside class="lg:col-span-1 card glass-card">
           <div class="card-body">
             <h3 class="text-lg md:text-xl font-bold mb-2">目录</h3>
             <nav id="toc" class="toc text-sm space-y-2"></nav>
@@ -212,12 +248,12 @@ const articleCover = "/icons/introduction.png";
       </div>
 
       <!-- 相关文章 -->
-      <section class="mt-8 card rounded-2xl shadow-xl bg-white/5 backdrop-blur-md border border-white/5">
+      <section class="mt-8 card glass-card">
         <div class="card-body">
           <h3 class="text-xl font-bold">相关文章</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-3">
             {categoryArticles["设计"]?.slice(0,4).map((it) => (
-              <a href={it.url} class="block p-3 rounded-xl bg-base-300 hover:bg-base-200">
+              <a href={toDetailHref(it)} class="block p-3 rounded-xl bg-base-300 hover:bg-base-200">
                 <div class="text-sm text-gray-400">{it.time}</div>
                 <div class="font-medium text-gray-200 mt-1">{it.title}</div>
                 <div class="text-xs text-gray-500 mt-1 line-clamp-2">{it.subdesc}</div>
@@ -237,6 +273,24 @@ const articleCover = "/icons/introduction.png";
         const btnBookmark = document.getElementById('btn-bookmark');
         const btnShare = document.getElementById('btn-share');
         const mdEl = document.getElementById('md-content');
+
+        // 统一的轻提示（Toast），用于复制/分享等非阻塞反馈
+        function showToast(message, type = 'success') {
+          let toast = document.getElementById('globalToast');
+          if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'globalToast';
+            toast.className = 'toast toast-top toast-end';
+            document.body.appendChild(toast);
+          }
+          const alert = document.createElement('div');
+          alert.className = 'alert ' + (type === 'error' ? 'alert-error' : type === 'warning' ? 'alert-warning' : 'alert-success');
+          const span = document.createElement('span');
+          span.textContent = message;
+          alert.appendChild(span);
+          toast.appendChild(alert);
+          setTimeout(() => alert.remove(), 2000);
+        }
 
         // 渲染 Markdown 到正文容器（使用自定义渲染库）
         try {
@@ -258,24 +312,43 @@ const articleCover = "/icons/introduction.png";
           const docH = document.documentElement.scrollHeight - window.innerHeight;
           const sc = window.scrollY;
           const p = Math.max(0, Math.min(1, docH ? sc/docH : 0));
-          progress.style.width = (p*100) + '%';
+          const pct = Math.round(p * 100);
+          progress.style.width = pct + '%';
+          progress.setAttribute('aria-valuenow', String(pct));
         }
         updateProgress();
-        window.addEventListener('scroll', updateProgress);
+        let ticking = false;
+        function onScroll(){
+          if (!ticking) {
+            requestAnimationFrame(() => { updateProgress(); ticking = false; });
+            ticking = true;
+          }
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
 
         // 生成目录并高亮当前章节
-        const headings = Array.from(article.querySelectorAll('h2'));
+        const headings = Array.from(article.querySelectorAll('h2, h3'));
         headings.forEach((h) => {
-          const id = h.textContent.trim().replace(/\s+/g,'-').toLowerCase();
-          h.id = id;
+          const baseId = (h.textContent || '').trim().replace(/\s+/g,'-').toLowerCase();
+          let id = baseId || 'section';
+          if (!h.id) {
+            let n = 2;
+            while (document.getElementById(id)) { id = baseId + '-' + (n++); }
+            h.id = id;
+          } else {
+            id = h.id;
+          }
           const a = document.createElement('a');
           a.href = '#' + id;
           a.textContent = h.textContent;
-          a.className = 'block px-2 py-1 rounded-lg hover:bg-base-300';
+          const depth = h.tagName.toLowerCase();
+          const indentClass = depth === 'h3' ? 'pl-3' : '';
+          a.className = 'block px-2 py-1 rounded-lg hover:bg-base-300 ' + indentClass;
           a.addEventListener('click', (e) => {
             e.preventDefault();
             const target = document.getElementById(id);
-            if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (target) { target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
           });
           if (toc) { toc.appendChild(a); }
         });
@@ -420,6 +493,7 @@ const articleCover = "/icons/introduction.png";
                 navigator.clipboard.writeText(text).then(() => {
                   copyBtn.textContent = '已复制';
                   setTimeout(() => copyBtn.textContent = '复制', 1200);
+                  showToast('代码已复制');
                 });
               } else {
                 const ta = document.createElement('textarea');
@@ -428,6 +502,7 @@ const articleCover = "/icons/introduction.png";
                 document.body.removeChild(ta);
                 copyBtn.textContent = '已复制';
                 setTimeout(() => copyBtn.textContent = '复制', 1200);
+                showToast('代码已复制');
               }
             });
             const leftWrap = document.createElement('div');
@@ -513,12 +588,12 @@ const articleCover = "/icons/introduction.png";
         btnShare.addEventListener('click', async () => {
           const shareData = { title: document.title, text: articleDesc, url: location.href };
           try {
-            if (navigator.share) { await navigator.share(shareData); }
+            if (navigator.share) { await navigator.share(shareData); showToast('已分享'); }
             else if (navigator.clipboard && navigator.clipboard.writeText) {
               await navigator.clipboard.writeText(location.href);
-              alert('链接已复制');
+              showToast('链接已复制');
             }
-          } catch(_){}
+          } catch(_) { }
         });
 
         // 评论（本地存储演示）
@@ -530,11 +605,17 @@ const articleCover = "/icons/introduction.png";
           const items = raw ? JSON.parse(raw) : [];
           if (list) { list.innerHTML = ''; }
           items.forEach((c) => {
-            const div = document.createElement('div');
-            div.className = 'p-3 rounded-xl bg-base-300';
-            div.innerHTML = '<div class="text-sm text-gray-400">' + (c && c.nickname ? c.nickname : '匿名') + '</div>' +
-                            '<div class="text-gray-200 mt-1">' + (c && c.content ? c.content : '') + '</div>';
-            if (list) { list.appendChild(div); }
+            const wrap = document.createElement('div');
+            wrap.className = 'p-3 rounded-xl bg-base-300';
+            const meta = document.createElement('div');
+            meta.className = 'text-sm text-gray-400';
+            meta.textContent = (c && c.nickname ? c.nickname : '匿名');
+            const content = document.createElement('div');
+            content.className = 'text-gray-200 mt-1';
+            content.textContent = (c && c.content ? c.content : '');
+            wrap.appendChild(meta);
+            wrap.appendChild(content);
+            if (list) { list.appendChild(wrap); }
           });
         }
         renderComments();

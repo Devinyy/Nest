@@ -1,5 +1,19 @@
 ---
 import articlesList from "../data/articles_list";
+
+const toDetailHref = (article) => {
+  const slug = article.slug || 'web-design-pattern';
+  const params = new URLSearchParams({
+    slug,
+    title: article.title,
+    desc: article.subdesc || '',
+    category: article.category || '',
+    date: article.time || '',
+    cover: article.cover || ''
+  });
+  for (const t of (article.tags || [])) params.append('tag', t);
+  return `/blog/detail?${params.toString()}`;
+};
 ---
 
 <div
@@ -17,8 +31,7 @@ import articlesList from "../data/articles_list";
             {articles.articles.map((article) => (
               <a
                 class="article-item group relative card rounded-2xl bg-neutral border border-white/10 hover:bg-base-300 overflow-hidden w-full"
-                href={article.url}
-                target="_blank"
+                href={toDetailHref(article)}
               >
                 <span class="pointer-events-none absolute left-3 top-3 bottom-3 w-[2px] bg-emerald-500/80 rounded-full" aria-hidden="true"></span>
 
