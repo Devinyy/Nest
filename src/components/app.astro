@@ -73,7 +73,7 @@ import StickyNav from "./sticky_nav.astro";
           <Card_4x2 info={info.projectCardEnd} />
         </div>
 
-        <!-- 生活日记 -->
+        <!-- 日常碎片 -->
         <div class="col-span-4">
           <Card_8x1 info={info.sectionTitles[2]} />
         </div>
@@ -93,13 +93,25 @@ import StickyNav from "./sticky_nav.astro";
               ))
             }
           </div>
-          <div class="hidden md:grid md:grid-cols-4 gap-x-4 lg:gap-x-8">
+          <div class="hidden md:block">
             {
-              info.diaryCards.map((card) => (
-                <div class="col-span-1">
-                  <Card_2x3 info={card} />
+              info.diaryCards.length > 4 ? (
+                <div class="flex flex-nowrap gap-4 lg:gap-8 pb-4">
+                  {info.diaryCards.map((card) => (
+                    <div class="flex-none w-[calc((100%-3*1rem)/4)] lg:w-[calc((100%-3*2rem)/4)]">
+                      <Card_2x3 info={card} />
+                    </div>
+                  ))}
                 </div>
-              ))
+              ) : (
+                <div class="grid grid-cols-4 gap-x-4 lg:gap-x-8">
+                  {info.diaryCards.map((card) => (
+                    <div class="col-span-1">
+                      <Card_2x3 info={card} />
+                    </div>
+                  ))}
+                </div>
+              )
             }
           </div>
         </div>
@@ -116,7 +128,7 @@ import StickyNav from "./sticky_nav.astro";
           ))
         } -->
 
-        <!-- 关注翠翠 -->
+        <!-- 关注 -->
         <div class="md:hidden col-span-4">
           <Card_8x1 info={info.sectionTitles[4]} />
         </div>

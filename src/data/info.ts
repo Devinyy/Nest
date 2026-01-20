@@ -179,14 +179,14 @@ export default {
   diaryCards: [
     {
       title: "台州行",
-      url: "https://xxxx",
+      url: "/blog/daily?id=daily1",
       bgStyle:
         "bg-[url('https://dummyimage.com/170x304/9c9c9c/fff.png&text=台州行')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
       textStyle: "text-white",
     },
     {
       title: "青甘环线之旅",
-      url: "https://xxxx",
+      url: "/blog/daily?id=daily2",
       bgStyle:
         "bg-[url('https://dummyimage.com/170x304/9c9c9c/fff.png&text=青甘环线之旅')] bg-cover bg-center shadow-accent hover:shadow-gray-500",
       textStyle: "text-white",
