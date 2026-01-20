@@ -96,9 +96,9 @@ import StickyNav from "./sticky_nav.astro";
           <div class="hidden md:block">
             {
               info.diaryCards.length > 4 ? (
-                <div class="flex flex-nowrap gap-4 lg:gap-8 pb-4">
+                <div id="scroll-container" class="flex flex-nowrap gap-4 lg:gap-8 pb-4 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing">
                   {info.diaryCards.map((card) => (
-                    <div class="flex-none w-[calc((100%-3*1rem)/4)] lg:w-[calc((100%-3*2rem)/4)]">
+                    <div class="flex-none w-[calc((100%-3*1rem)/4)] lg:w-[calc((100%-3*2rem)/4)] select-none">
                       <Card_2x3 info={card} />
                     </div>
                   ))}
@@ -250,6 +250,60 @@ import StickyNav from "./sticky_nav.astro";
   import updateInfo from "../data/update";
 
   document.addEventListener("DOMContentLoaded", () => {
+    // 鼠标拖拽滚动逻辑
+    const slider = document.getElementById('scroll-container');
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let isDragging = false; // 新增标志位：是否正在拖拽
+
+    if (slider) {
+      // 防止子元素（如链接、图片）的默认拖拽行为干扰自定义滚动
+      slider.querySelectorAll('a, img').forEach(el => {
+        el.addEventListener('dragstart', (e) => e.preventDefault());
+      });
+
+      // 在捕获阶段拦截点击事件
+      slider.addEventListener('click', (e) => {
+        if (isDragging) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, true);
+
+      slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        isDragging = false; // 重置拖拽状态
+        slider.classList.add('active');
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+      });
+      slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.classList.remove('active');
+      });
+      slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.classList.remove('active');
+        // 延迟重置拖拽状态，确保 click 事件能读取到正确的 isDragging 状态
+        setTimeout(() => {
+          isDragging = false;
+        }, 0);
+      });
+      slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 2; // 滚动速度倍率
+        slider.scrollLeft = scrollLeft - walk;
+        
+        // 如果移动距离超过 5px，则视为拖拽
+        if (Math.abs(x - startX) > 5) {
+          isDragging = true;
+        }
+      });
+    }
+
     updateInfo.forEach((item) => {
       fetch(item.updateUrl)
         .then((response) => response.json())
