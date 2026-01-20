@@ -9,8 +9,21 @@ import { hotTags } from "../data/blog_category";
 import type { BlogCategory } from "../data/blog_category";
 const blogTimeline: TimelineGroup[] = timeline;
 const timelineCount = blogTimeline.reduce((sum, g) => sum + g.items.length, 0);
-import { categoryArticles } from "../data/articles_list";
-import type { ArticleItem } from "../data/articles_list";
+
+// Flatten timeline for client-side filtering
+const allBlogPosts = blogTimeline.flatMap((group) =>
+  group.items.map((item) => ({
+    ...item,
+    // Use full date for sorting and display in list view
+    time: `${group.year}-${item.time}`,
+    // Keep original short time if needed, but list view usually prefers full date
+    // Or we can keep 'time' as is and add 'fullTime', but let's standardize on 'time' for the list view
+    // actually, let's keep 'time' as the display string (YYYY-MM-DD)
+    year: group.year,
+    tags: item.tags || []
+  }))
+);
+
 const currentYear = new Date().getFullYear();
 
 // 解析时间线条目的日期：支持完整日期、以及不含年份的 MM-DD 等格式
@@ -57,7 +70,7 @@ function isWithinLastMonths(dt: Date, months: number): boolean {
 // 为浏览器 window 增加类型声明，提供 __categoryArticles__ 挂载点
 declare global {
   interface Window {
-    __categoryArticles__: Record<string, ArticleItem[]>;
+    __allBlogPosts__: TimelineItem[];
   }
 }
 
@@ -181,8 +194,6 @@ declare global {
               <div class="flex items-center justify-between mb-2">
                 <h1 class="text-2xl md:text-3xl font-bold"><span id="category-list-title">分类文章</span></h1>
                 <div class="flex items-center gap-2">
-                  <button id="sort-latest" class="btn btn-sm rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500">最新</button>
-                  <button id="sort-hot" class="btn btn-sm rounded-xl btn-outline text-gray-200">最热</button>
                   <button id="back-to-timeline" class="btn btn-sm btn-outline">返回时间线</button>
                 </div>
               </div>
@@ -243,8 +254,20 @@ declare global {
         </aside>
       </div>
     </main>
-    <script>
+    <script is:inline>
       document.addEventListener("DOMContentLoaded", () => {
+        try {
+          const dataScript = document.getElementById('blog-posts-data');
+          if (dataScript) {
+            window.__allBlogPosts__ = JSON.parse(dataScript.textContent || '[]');
+          } else {
+            window.__allBlogPosts__ = [];
+          }
+        } catch (e) {
+          console.error('Failed to parse blog posts data:', e);
+          window.__allBlogPosts__ = [];
+        }
+
         // 视图状态
         let activeCategory = null; // 当前选中的分类名称
         let activeTag = null; // 当前选中的标签名称
@@ -259,39 +282,13 @@ declare global {
         const pager = document.getElementById('category-pager');
         const pagerInfo = document.getElementById('pager-info');
         const backBtn = document.getElementById('back-to-timeline');
-        const sortLatestBtn = document.getElementById('sort-latest');
-        const sortHotBtn = document.getElementById('sort-hot');
+        // const sortLatestBtn = document.getElementById('sort-latest');
+        // const sortHotBtn = document.getElementById('sort-hot');
 
-        function updateSortButtons() {
-          if (sortLatestBtn instanceof HTMLElement && sortHotBtn instanceof HTMLElement) {
-            const latestActive = sortMode === 'latest';
-            sortLatestBtn.classList.toggle('bg-emerald-500', latestActive);
-            sortLatestBtn.classList.toggle('hover:bg-emerald-400', latestActive);
-            sortLatestBtn.classList.toggle('text-black', latestActive);
-            sortLatestBtn.classList.toggle('border-emerald-500', latestActive);
-            sortLatestBtn.classList.toggle('btn-outline', !latestActive);
-            sortLatestBtn.classList.toggle('text-gray-200', !latestActive);
-
-            const hotActive = sortMode === 'hot';
-            sortHotBtn.classList.toggle('btn-outline', !hotActive);
-            sortHotBtn.classList.toggle('bg-emerald-500', hotActive);
-            sortHotBtn.classList.toggle('hover:bg-emerald-400', hotActive);
-            sortHotBtn.classList.toggle('text-black', hotActive);
-            sortHotBtn.classList.toggle('border-emerald-500', hotActive);
-            sortHotBtn.classList.toggle('text-gray-200', !hotActive);
-          }
-        }
-
+        // function updateSortButtons() { ... } - Removed as only one sort mode exists
+        
         function parseViews(v) {
-          if (typeof v === 'number') return v;
-          const s = String(v || '').trim().toLowerCase();
-          if (!s) return 0;
-          // 支持 k / 万 等简写
-          const num = parseFloat(s.replace(/[^0-9.]/g, ''));
-          if (isNaN(num)) return 0;
-          if (s.includes('k')) return Math.round(num * 1000);
-          if (s.includes('万')) return Math.round(num * 10000);
-          return Math.round(num);
+          return 0; // Removed usage
         }
 
         function parseTime(t) {
@@ -337,43 +334,31 @@ declare global {
         }
 
         function getAllArticles() {
-          const data = window.__categoryArticles__ || {};
-          const all = [];
-          Object.keys(data).forEach((k) => {
-            const arr = data[k] || [];
-            arr.forEach((it) => all.push(it));
-          });
-          return all;
+          return window.__allBlogPosts__ || [];
         }
 
         function getFilteredArticles() {
-          const data = window.__categoryArticles__ || {};
+          let filtered = getAllArticles();
           const tag = normalizeTag(activeTag);
           const hasCategory = !!activeCategory && activeCategory !== '时间线';
 
-          // 同时支持：1分类 + 1标签（交集）
-          if (hasCategory && tag) {
-            const base = data[activeCategory] || [];
-            return base.filter((a) => (a.tags || []).includes(tag));
-          }
-          // 仅标签
-          if (tag) {
-            return getAllArticles().filter((a) => (a.tags || []).includes(tag));
-          }
-          // 仅分类（排除“时间线”特殊项）
+          // 1. Filter by Category
           if (hasCategory) {
-            return data[activeCategory] || [];
+            filtered = filtered.filter((a) => a.category === activeCategory);
           }
-          return [];
+
+          // 2. Filter by Tag
+          if (tag) {
+            filtered = filtered.filter((a) => (a.tags || []).includes(tag));
+          }
+
+          return filtered;
         }
 
         function renderList() {
           const items = getFilteredArticles();
           // 排序
           const sorted = [...items].sort((a, b) => {
-            if (sortMode === 'hot') {
-              return parseViews(b.views) - parseViews(a.views);
-            }
             // latest：时间倒序
             return parseTime(b.time) - parseTime(a.time);
           });
@@ -392,28 +377,31 @@ declare global {
 
           if (listContainer) {
             const html = slice.map((a) => {
-              const coverHtml = a.cover
-                ? `<figure class="w-full h-40 md:h-52"><img src="${a.cover}" alt="${a.title}" class="w-full h-full object-cover object-center"/></figure>`
-                : `<div class=\"w-full h-40 md:h-52 bg-base-300 flex items-center justify-center\"><span class=\"px-3 py-2 rounded-md bg-emerald-600/20 text-emerald-400 text-sm font-semibold\">配图</span></div>`;
-              const viewsHtml = a.views ? `<span class=\"inline-flex items-center gap-2\"><span aria-hidden=\"true\">👁️</span>${a.views}</span>` : '';
+              // 标签渲染：使用更紧凑的样式
               const tagsHtml = Array.isArray(a.tags) && a.tags.length
-                ? `<div class=\"mt-2 flex flex-wrap gap-2\">${a.tags.map((t) => `<span class=\"inline-flex items-center rounded-full bg-base-300 px-2.5 py-0.5 text-xs text-gray-300\">${t}</span>`).join('')}</div>`
-                : '';
+                ? `<div class="flex flex-wrap gap-2 text-xs">${a.tags.map((t) => `<span class="px-2 py-0.5 rounded bg-base-300/50 text-gray-400 border border-white/5">${t}</span>`).join('')}</div>`
+                : '<div></div>';
+              
+              // 移除大封面占位，改为紧凑的卡片布局
               return `
-                <a href="${a.url}" target="_blank" class="group relative card rounded-2xl bg-neutral border border-white/5 hover:bg-base-300 overflow-hidden w-full">
-                  <span class="pointer-events-none absolute left-3 top-4 bottom-4 w-[3px] bg-emerald-500/80 rounded-full" aria-hidden="true"></span>
-                  ${coverHtml}
-                  <div class="card-body">
-                    <div class="flex flex-wrap justify-between items-center gap-3 text-sm text-gray-400">
-                      <span class="inline-flex items-center gap-2"><span aria-hidden="true">📅</span>${a.time || ''}</span>
-                      ${viewsHtml}
-                    </div>
-                    <h3 class="text-base md:text-xl font-bold mt-2 text-white group-hover:text-emerald-400">${a.title}</h3>
-                    ${a.subdesc ? `<p class="mt-2 text-sm md:text-base text-gray-300 line-clamp-2">${a.subdesc}</p>` : ''}
+                <a href="/blog/detail/?id=${a.blogId}" class="group relative flex flex-col p-4 sm:p-5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-300 w-full">
+                  <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                    <span class="flex items-center gap-1.5 font-mono text-emerald-500/80">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      ${a.time || ''}
+                    </span>
+                    ${a.category ? `<span class="px-2 py-0.5 rounded-full bg-base-300 text-gray-500 text-[10px]">${a.category}</span>` : ''}
+                  </div>
+                  
+                  <h3 class="text-base sm:text-lg font-bold text-gray-200 group-hover:text-emerald-400 transition-colors mb-4 line-clamp-2">
+                    ${a.title}
+                  </h3>
+                  
+                  <div class="mt-auto flex items-end justify-between gap-4">
                     ${tagsHtml}
-                    <div class="card-actions justify-end">
-                      <button class="btn btn-sm rounded-xl border border-white/5 bg-base-300 hover:bg-base-200 text-gray-200">详情</button>
-                    </div>
+                    <span class="text-gray-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-300 shrink-0">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                    </span>
                   </div>
                 </a>
               `;
@@ -547,21 +535,9 @@ declare global {
           });
         });
 
-        // 排序按钮
-        sortLatestBtn && sortLatestBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          sortMode = 'latest';
-          updateSortButtons();
-          currentPage = 1;
-          renderList();
-        });
-        sortHotBtn && sortHotBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          sortMode = 'hot';
-          updateSortButtons();
-          currentPage = 1;
-          renderList();
-        });
+        // 排序按钮 (已移除)
+        // sortLatestBtn && sortLatestBtn.addEventListener('click', ...);
+        // sortHotBtn && sortHotBtn.addEventListener('click', ...);
 
         // 分页按钮
         if (pager instanceof HTMLElement) {
@@ -611,28 +587,14 @@ declare global {
           setTimelineActiveCategory();
         });
 
-        // 注入分类文章数据（供前端脚本使用）
-        window.__categoryArticles__ = /** @type {Record<string, any[]>} */ ({});
-        try {
-          // 通过 inline JSON 注入
-          const dataScript = document.getElementById('__category_articles_data');
-          if (dataScript) {
-            const parsed = JSON.parse(dataScript.textContent || '{}');
-            window.__categoryArticles__ = parsed || {};
-          }
-        } catch (_) {}
-
         // 初始：时间线视图，并高亮“时间线”分类
         showTimelineView();
         setTimelineActiveCategory();
-        updateSortButtons();
+        // updateSortButtons(); // Removed
       });
     </script>
-
-    <!-- 注入分类文章数据（JSON） -->
-    <script id="__category_articles_data" type="application/json">
-      {JSON.stringify(categoryArticles)}
-    </script>
     <script defer src="/libs/mouse-click.js"></script>
+    <!-- 注入服务端数据 -->
+    <script type="application/json" id="blog-posts-data" set:html={JSON.stringify(allBlogPosts)}></script>
   </body>
 </html>
