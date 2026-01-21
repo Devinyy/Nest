@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import Card_2x1 from "./card_2x1.astro";
 import Card_2x2 from "./card_2x2.astro";
 import Card_2x3 from "./card_2x3.astro";
@@ -6,10 +7,14 @@ import Card_4x2 from "./card_4x2.astro";
 import Card_8x1 from "./card_8x1.astro";
 import Articles_List from "./articles_list.astro";
 import info from "../data/info";
+import StickyNav from "./sticky_nav.astro";
 // const showCV = false;
 ---
 
-<div class="container m-auto lg:max-xl:w-min main">
+<!-- 置顶固定导航组件（滚动至 100vh 后显示） -->
+<StickyNav showAuth={false} />
+
+<div class="container m-auto main">
   <div
     class="xl:flex xl:flex-row xl:justify-between max-w-screen-2xl px-2 xs:px-5 lg:px-10"
   >
@@ -18,13 +23,16 @@ import info from "../data/info";
     >
       <div class="pt-10 xl:pt-20"></div>
       <div class="w-64">
-        <img
+        <Image
+          width={32}
+          height={32}
           class="w-32 h-32 md:w-52 md:h-52 rounded-full"
           src={info.imgUrl}
           alt={info.title}
         />
         <div class="pt-10"></div>
         <h1 class="text-4xl font-bold pl-2">{info.title}</h1>
+        <div class="pt-2"></div>
         <p class="text-lg pl-2">{info.desc}</p>
       </div>
     </aside>
@@ -45,7 +53,7 @@ import info from "../data/info";
         </div>
 
         <!-- 文章列表 -->
-        <div class="col-span-4">
+        <div class="mt-10 col-span-4">
           <Card_8x1 info={info.sectionTitles[0]} />
           <Articles_List />
         </div>
@@ -68,7 +76,7 @@ import info from "../data/info";
           <Card_4x2 info={info.projectCardEnd} />
         </div>
 
-        <!-- 生活日记 -->
+        <!-- 日常碎片 -->
         <div class="col-span-4">
           <Card_8x1 info={info.sectionTitles[2]} />
         </div>
@@ -88,19 +96,31 @@ import info from "../data/info";
               ))
             }
           </div>
-          <div class="hidden md:grid md:grid-cols-4 gap-x-4 lg:gap-x-8">
+          <div class="hidden md:block">
             {
-              info.diaryCards.map((card) => (
-                <div class="col-span-1">
-                  <Card_2x3 info={card} />
+              info.diaryCards.length > 4 ? (
+                <div id="scroll-container" class="flex flex-nowrap gap-4 lg:gap-8 pb-4 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing">
+                  {info.diaryCards.map((card) => (
+                    <div class="flex-none w-[calc((100%-3*1rem)/4)] lg:w-[calc((100%-3*2rem)/4)] select-none">
+                      <Card_2x3 info={card} />
+                    </div>
+                  ))}
                 </div>
-              ))
+              ) : (
+                <div class="grid grid-cols-4 gap-x-4 lg:gap-x-8">
+                  {info.diaryCards.map((card) => (
+                    <div class="col-span-1">
+                      <Card_2x3 info={card} />
+                    </div>
+                  ))}
+                </div>
+              )
             }
           </div>
         </div>
 
         <!-- 音乐创作 -->
-        <div class="col-span-4">
+        <!-- <div class="col-span-4">
           <Card_8x1 info={info.sectionTitles[3]} />
         </div>
         {
@@ -109,9 +129,9 @@ import info from "../data/info";
               <Card_4x2 info={card} />
             </div>
           ))
-        }
+        } -->
 
-        <!-- 关注翠翠 -->
+        <!-- 关注 -->
         <div class="md:hidden col-span-4">
           <Card_8x1 info={info.sectionTitles[4]} />
         </div>
@@ -138,7 +158,14 @@ import info from "../data/info";
 
       <footer class="text-center py-10">
         <div class="">
-          made with ❤️ by <a
+          ✒️ re-creation by <a
+            href="https://xxxxx"
+            target="_blank"
+            class="text-gray-400">Devin</a
+          >
+        </div>
+        <div class="">
+          ❤️ thanks to <a
             href="https://idealclover.top"
             target="_blank"
             class="text-gray-400">idealclover</a
@@ -166,7 +193,7 @@ import info from "../data/info";
             href="https://beian.miit.gov.cn"
             rel="noreferrer"
             target="_blank"
-            class="text-gray-400">京ICP备2024045824号</a
+            class="text-gray-400">浙ICP备xxxxxxxx号</a
           >
         </div>
         <div class="beian">
@@ -174,7 +201,7 @@ import info from "../data/info";
             href="https://beian.mps.gov.cn/#/query/webSearch?code=11010502054688"
             rel="noreferrer"
             target="_blank"
-            class="text-gray-400">京公网安备11010502054688号</a
+            class="text-gray-400">浙公网安备xxxxxxx号</a
           >
         </div>
       </footer>
@@ -183,6 +210,9 @@ import info from "../data/info";
 </div>
 
 <style>
+  .container {
+    padding-top: 40px;
+  }
   .mail {
     background: url("https://image.idealclover.cn/projects/Homepage/icons/icons.png") -0px -0px
       no-repeat;
@@ -219,19 +249,10 @@ import info from "../data/info";
 </style>
 
 <script>
-  // 更新粉丝数
-  import updateInfo from "../data/update";
+  import { initDragScroll, initFollowerUpdate } from "../scripts/home-interactions";
 
   document.addEventListener("DOMContentLoaded", () => {
-    updateInfo.forEach((item) => {
-      fetch(item.updateUrl)
-        .then((response) => response.json())
-        .then((data) => {
-          const element = document.querySelector(`.${item.className}`);
-          if (data.count == null) return;
-          if (element) element.textContent = data.count + " Followers";
-        })
-        .catch((error) => console.error("Error:", error));
-    });
+    initDragScroll();
+    initFollowerUpdate();
   });
 </script>

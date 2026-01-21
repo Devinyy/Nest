@@ -1,41 +1,11 @@
 /** @type {import('tailwindcss').Config} */
+import themes from "./src/theme/colors.js";
 
 export default {
   content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
-  plugins: [require("daisyui")],
+  plugins: [require("daisyui"), require("@tailwindcss/typography")],
   daisyui: {
-    themes: [
-      {
-        light: {
-          primary: "white",
-          "primary-focus": "#f5f5f5",
-          "primary-content": "black",
-          secondary: "#ededed",
-          accent: "#b8b8b8",
-          neutral: "#ebebeb",
-          "base-100": "white",
-          "base-200": "#e6e6e6",
-          "base-300": "#d9d9d9",
-          ".card-title": {
-            "margin-bottom": "0!important",
-          },
-        },
-        black: {
-          primary: "#262626",
-          "primary-focus": "#222020",
-          secondary: "#343232",
-          accent: "#2d2d2d",
-          neutral: "#383838",
-          "base-100": "black",
-          "base-200": "#0d0d0d",
-          "base-300": "#2a2a2a",
-        },
-      },
-
-      // "wireframe",
-      // "black",
-    ],
-    // themes: ["black"],
+    themes,
     darkTheme: "black",
   },
   theme: {

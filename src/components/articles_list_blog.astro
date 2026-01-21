@@ -1,0 +1,194 @@
+---
+import { Image as AstroImage } from "astro:assets";
+import articlesList from "../data/articles_list";
+
+const toDetailHref = (article: {
+  slug?: string;
+  title: string;
+  subdesc?: string;
+  category?: string;
+  time?: string;
+  cover?: string;
+  tags?: string[];
+}) => {
+  const slug = article.slug || 'web-design-pattern';
+  const params = new URLSearchParams({
+    slug,
+    title: article.title,
+    desc: article.subdesc || '',
+    category: article.category || '',
+    date: article.time || '',
+    cover: article.cover || ''
+  });
+  for (const t of (article.tags || [])) params.append('tag', t);
+  return `/blog/detail?${params.toString()}`;
+};
+---
+
+<div
+  class="card max-lg:card-compact rounded-2xl shadow-md bg-neutral w-full min-h-[3rem] mb-4"
+>
+  <div class="card-body p-4 sm:p-5">
+    {
+      articlesList.map((articles, index) => (
+        <div
+          class={`tab-content ${index === 0 ? "block" : "hidden"}`}
+          data-tab-index={index}
+          data-page-size="10"
+        >
+          <div class="grid grid-cols-1 gap-2">
+            {articles.articles.map((article) => (
+              <a
+                class="article-item group relative card rounded-2xl bg-neutral border border-white/10 hover:bg-base-300 overflow-hidden w-full"
+                href={toDetailHref(article)}
+              >
+                <span class="pointer-events-none absolute left-3 top-3 bottom-3 w-[2px] bg-emerald-500/80 rounded-full" aria-hidden="true"></span>
+
+                <div class="card-body p-4 sm:p-5">
+                  <div class="flex items-start gap-3">
+                    <div class="w-20 h-20 md:w-24 md:h-24 shrink-0">
+                      {article.cover ? (
+                        <AstroImage src={article.cover} width={100} height={100} alt={article.title} class="w-full h-full object-cover object-center rounded-md" />
+                      ) : (
+                        <div class="w-full h-full bg-base-300 flex items-center justify-center rounded-md">
+                          <span class="px-2 py-1 rounded-md bg-emerald-600/20 text-emerald-400 text-xs font-semibold">配图</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div class="flex-1">
+                      <h3 class="text-sm md:text-base font-bold text-white group-hover:text-emerald-400">{article.title}</h3>
+                      {article.subdesc && (
+                        <p class="mt-1 text-xs md:text-sm text-gray-300 line-clamp-2">{article.subdesc}</p>
+                      )}
+
+                      <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                        <span class="inline-flex items-center gap-1">
+                          <span aria-hidden="true">📅</span>
+                          {article.time}
+                        </span>
+                        {article.views && (
+                          <span class="inline-flex items-center gap-1">
+                            <span aria-hidden="true">👁️</span>
+                            {article.views}
+                          </span>
+                        )}
+                      </div>
+
+                      {article.tags && article.tags.length > 0 && (
+                        <div class="mt-2 flex flex-wrap gap-2">
+                          {article.tags.map((t) => (
+                            <span class="inline-flex items-center rounded-full bg-base-300 px-2.5 py-0.5 text-xs text-gray-300">{t}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          <div class="pt-1" />
+
+          <div class="card-actions justify-between items-center">
+            <div class="text-xs text-gray-400">
+              第 <span class="pager-current">1</span> / <span class="pager-total">1</span> 页
+            </div>
+            <div class="join">
+              <button class="btn btn-xs join-item pager-prev" type="button">上一页</button>
+              <button class="btn btn-xs join-item pager-next" type="button">下一页</button>
+            </div>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tabs = document.querySelectorAll(".tab");
+    const contents = document.querySelectorAll(".tab-content");
+
+    function setActiveTab(index: number) {
+      tabs.forEach((tab, i) => {
+        if (i === index) {
+          tab.classList.add("tab-active");
+        } else {
+          tab.classList.remove("tab-active");
+        }
+      });
+
+      contents.forEach((content, i) => {
+        if (i === index) {
+          content.classList.remove("hidden");
+          content.classList.add("block");
+        } else {
+          content.classList.add("hidden");
+          content.classList.remove("block");
+        }
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const attr = tab.getAttribute("data-tab-index");
+        const index = attr ? parseInt(attr, 10) : 0;
+        setActiveTab(index);
+      });
+    });
+
+    // 初始化每个内容面板的分页
+    function initPaginationForContent(tc: HTMLElement) {
+      const items = tc.querySelectorAll<HTMLElement>(".article-item");
+      const pageSizeAttr = tc.getAttribute("data-page-size");
+      const pageSize = pageSizeAttr ? parseInt(pageSizeAttr, 10) : 10;
+      const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+      tc.dataset.totalPages = String(totalPages);
+      tc.dataset.currentPage = "1";
+
+      const currentSpan = tc.querySelector<HTMLElement>(".pager-current");
+      const totalSpan = tc.querySelector<HTMLElement>(".pager-total");
+      const prevBtn = tc.querySelector<HTMLButtonElement>(".pager-prev");
+      const nextBtn = tc.querySelector<HTMLButtonElement>(".pager-next");
+
+      function renderPage(page: number) {
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        items.forEach((el, idx) => {
+          el.style.display = idx >= start && idx < end ? "" : "none";
+        });
+        tc.dataset.currentPage = String(page);
+        if (currentSpan) currentSpan.textContent = String(page);
+        if (totalSpan) totalSpan.textContent = String(totalPages);
+        if (prevBtn) prevBtn.disabled = page <= 1;
+        if (nextBtn) nextBtn.disabled = page >= totalPages;
+      }
+
+      // 初始渲染第一页
+      renderPage(1);
+
+      // 绑定事件
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          const curr = parseInt(tc.dataset.currentPage || "1", 10);
+          if (curr > 1) renderPage(curr - 1);
+        });
+      }
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          const curr = parseInt(tc.dataset.currentPage || "1", 10);
+          const total = parseInt(tc.dataset.totalPages || "1", 10);
+          if (curr < total) renderPage(curr + 1);
+        });
+      }
+    }
+
+    contents.forEach((content) => {
+      initPaginationForContent(content as HTMLElement);
+    });
+
+    setActiveTab(0);
+  });
+</script>

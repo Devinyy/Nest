@@ -1,0 +1,647 @@
+---
+import StickyNav from "../../components/sticky_nav.astro";
+import CategoryIcon from "../../components/category_icon.astro";
+import { Image as AstroImage } from "astro:assets";
+import { categoryArticles, type ArticleItem } from "../../data/articles_list";
+
+// 支持通过查询参数渲染不同文章内容
+const url = new URL(Astro.request.url);
+const qp = url.searchParams;
+const slug = qp.get('slug') || 'web-design-pattern';
+const articleTitle = qp.get('title') || "现代 Web 设计的演进与最佳实践";
+const articleDesc = qp.get('desc') || "样式与交互统一、舒适顺畅的设计范式整理";
+const articleCategory = qp.get('category') || "设计";
+const articleDate = qp.get('date') || "2025-08-31";
+const articleTags = (qp.getAll('tag')?.length ? qp.getAll('tag') : (qp.get('tags')?.split(',').filter(Boolean) || ["CSS", "交互", "设计系统"])) as string[];
+const articleCover = qp.get('cover') || "/icons/introduction.png";
+
+// 文章正文通过 slug 动态载入（支持 *.md 原文）
+let markdownRaw: string = "";
+const mdFiles = import.meta.glob("../../content/blog/*.md", { as: 'raw' });
+for (const [path, loader] of Object.entries(mdFiles)) {
+  if (path.endsWith(`/${slug}.md`)) {
+    markdownRaw = await loader();
+    break;
+  }
+}
+if (!markdownRaw) {
+  markdownRaw = `# 内容未找到\n\n未找到 slug 为 \`${slug}\` 的文章。`;
+}
+
+// 统一构建 detail 链接（用于相关文章等位置）
+const toDetailHref = (it: ArticleItem) => {
+  const s = (it as any).slug || 'web-design-pattern';
+  const params = new URLSearchParams({
+    slug: s,
+    title: it.title,
+    desc: it.subdesc || '',
+    category: it.category || articleCategory,
+    date: it.time || '',
+    cover: it.cover || ''
+  });
+  for (const t of (it.tags || [])) params.append('tag', t);
+  return `/blog/detail?${params.toString()}`;
+};
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="black">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{articleTitle} · Devin's Nest</title>
+    <meta name="description" content={articleDesc} />
+    <link
+      rel="preload"
+      href="/fonts/MaoKenZhuYuanTi.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
+    <style>
+      @font-face {
+        font-family: "MaokenZhuyuanTi";
+        src: url(/fonts/MaoKenZhuYuanTi.ttf);
+        font-display: swap;
+      }
+      body { cursor: url(/icons/cursor.ico), auto; font-family: "MaokenZhuyuanTi"; }
+      /* 阅读进度条 */
+      .reading-progress {
+        position: fixed; top: 0; left: 0; height: 3px; width: 0;
+        background: rgb(16 185 129); z-index: 9999;
+        box-shadow: 0 0 6px rgba(16,185,129,0.6);
+      }
+      /* 文章内图片优化 */
+      .article img { border-radius: 0.75rem; }
+      /* 目录当前项高亮 */
+      .toc a.active { color: rgb(16 185 129); }
+      /* 代码块复制按钮 */
+      .code-copy {
+        position: absolute; right: 0.75rem; top: 0.5rem;
+      }
+      pre { position: relative; }
+      .article pre {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+      }
+      .article pre code { display: block; overflow-x: auto; }
+
+      /* 表格列对齐（GFM 表格 `|:--|--:|:--:|` 对齐规则）*/
+      .article table th[align="left"], .article table td[align="left"] { text-align: left; }
+      .article table th[align="center"], .article table td[align="center"] { text-align: center; }
+      .article table th[align="right"], .article table td[align="right"] { text-align: right; }
+
+
+      .article .code-header {
+        display: flex; align-items: center; justify-content: space-between;
+        background: transparent; /* 头部与正文使用同一背景 */
+        border: none;
+        white-space: nowrap; /* 头部内容同行显示不换行 */
+        padding: 0.4rem 0.75rem;
+        font-size: 0.75rem;
+        color: #cbd5e1;
+      }
+      .article .code-lang { font-weight: 600; color: #a3a3a3; }
+      /* 行号 */
+      .article .code-lines { counter-reset: line; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .article .code-line {
+        display: block;
+        padding-left: 0.75rem;
+        white-space: pre;
+      }
+      /* 深色模式强调覆盖（提高可见性） */
+      .article .code-header {
+        background: transparent; /* 与代码块完整一致的背景 */
+        border: none;
+        white-space: nowrap; /* 头部内容同行显示不换行 */
+        padding: 0.45rem 0.8rem;
+        font-size: 0.78rem;
+        color: #e5e7eb;
+      }
+      .article pre {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.14);
+        padding: 0.85rem 1rem;
+      }
+      .article .code-dots { display: inline-flex; align-items: center; gap: 0.4rem; margin-right: 0.6rem; }
+      .article .code-dots .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; opacity: 0.9; }
+      .article .code-dots .dot-red { background-color: #ef4444; }
+      .article .code-dots .dot-yellow { background-color: #f59e0b; }
+      .article .code-dots .dot-green { background-color: #10b981; }
+
+      /* 修复：使用 global 选择器确保对动态插入的 Markdown 表格生效 */
+      :global(.article table th[align="left"]), :global(.article table td[align="left"]) { text-align: left !important; }
+      :global(.article table th[align="center"]), :global(.article table td[align="center"]) { text-align: center !important; }
+      :global(.article table th[align="right"]), :global(.article table td[align="right"]) { text-align: right !important; }
+
+      /* 移动端适配：压缩间距与更友好的滚动 */
+      @media (max-width: 640px) {
+        /* 代码块整体更紧凑 */
+        .article .code-container { margin: 0.75rem 0; }
+        .article .code-header { padding: 0.35rem 0.6rem; font-size: 0.72rem; }
+        .article .code-dots .dot { width: 8px; height: 8px; }
+        .article pre { padding: 0.7rem 0.8rem; max-height: 50vh; overflow: auto; }
+        .article .code-line { padding-left: 0.5rem; }
+        .article .code-line::before { width: 1.75rem; margin-right: 0.5rem; }
+
+        /* 目录在手机端更紧凑且可滚动 */
+        aside.card .card-body { padding: 0.75rem; }
+        #toc { max-height: 50vh; overflow: auto; }
+        #toc a { padding: 0.25rem 0.4rem; }
+      }
+
+      /* 复用玻璃卡片样式，减少类名重复并统一视觉 */
+      .glass-card {
+        border-radius: 1rem;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      }
+    </style>
+  </head>
+  <body class="bg-base-100">
+    <div class="reading-progress" id="readingProgress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="阅读进度"></div>
+    <StickyNav showImmediately={true} />
+
+    <main class="max-w-screen-2xl mx-auto px-3 xs:px-5 lg:px-10 pt-20 pb-12">
+      <!-- 顶部信息区 -->
+      <section class="card glass-card">
+        <div class="card-body">
+          <div class="flex items-start gap-4">
+            <AstroImage src={articleCover} width={64} height={64} alt={articleTitle} class="w-16 h-16 rounded-xl object-cover" />
+            <div class="flex-1">
+              <h1 class="text-3xl md:text-4xl font-bold mb-2">{articleTitle}</h1>
+              <p class="text-gray-400 mb-3">{articleDesc}</p>
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+                <span class="text-gray-400">{articleDate}</span>
+                <span class="px-2 py-1 rounded-lg bg-base-300 text-gray-200 flex items-center gap-1">
+                  <CategoryIcon name="palette" class="w-4 h-4" />{articleCategory}
+                </span>
+                {articleTags.map((t) => (
+                  <span class="px-2 py-1 rounded-full bg-base-300 text-gray-200">{t}</span>
+                ))}
+                <div class="ml-auto flex items-center gap-2">
+                  <button id="btn-like" class="btn btn-sm rounded-xl btn-outline" aria-label="喜欢文章" title="喜欢">喜欢</button>
+                  <button id="btn-bookmark" class="btn btn-sm rounded-xl btn-outline" aria-label="收藏文章" title="收藏">收藏</button>
+                  <button id="btn-share" class="btn btn-sm rounded-xl" aria-label="分享文章" title="分享">分享</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6 mt-6">
+        <!-- 正文 -->
+        <article id="article" class="article card glass-card">
+          <div class="card-body prose prose-invert max-w-none">
+            <div id="md-content"></div>
+
+            <h2>表单与交互</h2>
+            <p>示例表单体现输入、校验与状态反馈：</p>
+            <form id="commentForm" class="space-y-2">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input id="nickname" type="text" placeholder="昵称" class="input input-bordered rounded-xl" />
+                <input id="email" type="email" placeholder="邮箱（可选）" class="input input-bordered rounded-xl" />
+              </div>
+              <textarea id="content" class="textarea textarea-bordered rounded-xl" rows="4" placeholder="写点什么吧…"></textarea>
+              <div class="flex items-center justify-between">
+                <label class="label cursor-pointer">
+                  <span class="label-text text-gray-300 mr-2">匿名</span>
+                  <input id="isAnon" type="checkbox" class="toggle toggle-sm" />
+                </label>
+                <button type="submit" class="btn rounded-xl">提交评论</button>
+              </div>
+            </form>
+            <div id="commentList" class="mt-4 space-y-3"></div>
+          </div>
+        </article>
+
+        <!-- 目录（右侧） -->
+        <aside class="lg:col-span-1 card glass-card">
+          <div class="card-body">
+            <h3 class="text-lg md:text-xl font-bold mb-2">目录</h3>
+            <nav id="toc" class="toc text-sm space-y-2"></nav>
+          </div>
+        </aside>
+      </div>
+
+      <!-- 相关文章 -->
+      <section class="mt-8 card glass-card">
+        <div class="card-body">
+          <h3 class="text-xl font-bold">相关文章</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-3">
+            {categoryArticles["设计"]?.slice(0,4).map((it) => (
+              <a href={toDetailHref(it)} class="block p-3 rounded-xl bg-base-300 hover:bg-base-200">
+                <div class="text-sm text-gray-400">{it.time}</div>
+                <div class="font-medium text-gray-200 mt-1">{it.title}</div>
+                <div class="text-xs text-gray-500 mt-1 line-clamp-2">{it.subdesc}</div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" define:vars={{ slug, articleDesc, articleMarkdown: markdownRaw }}>
+      document.addEventListener('DOMContentLoaded', async () => {
+        const progress = document.getElementById('readingProgress');
+        const article = document.getElementById('article');
+        const toc = document.getElementById('toc');
+        const btnLike = document.getElementById('btn-like');
+        const btnBookmark = document.getElementById('btn-bookmark');
+        const btnShare = document.getElementById('btn-share');
+        const mdEl = document.getElementById('md-content');
+
+        // 统一的轻提示（Toast），用于复制/分享等非阻塞反馈
+        function showToast(message, type = 'success') {
+          let toast = document.getElementById('globalToast');
+          if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'globalToast';
+            toast.className = 'toast toast-top toast-end';
+            document.body.appendChild(toast);
+          }
+          const alert = document.createElement('div');
+          alert.className = 'alert ' + (type === 'error' ? 'alert-error' : type === 'warning' ? 'alert-warning' : 'alert-success');
+          const span = document.createElement('span');
+          span.textContent = message;
+          alert.appendChild(span);
+          toast.appendChild(alert);
+          setTimeout(() => alert.remove(), 2000);
+        }
+
+        // 渲染 Markdown 到正文容器（使用自定义渲染库）
+        try {
+          const { renderMarkdownToElement } = await import('/libs/md-renderer.js');
+          await renderMarkdownToElement(articleMarkdown, mdEl, {
+            // 先禁用库内高亮，改为在行号美化后自定义高亮
+            // highlight: false,
+            mermaid: true,
+            math: true,
+            sanitize: true,
+          });
+        } catch (e) {
+          // 解析库加载失败则以纯文本回退，避免页面空白
+          mdEl.textContent = articleMarkdown;
+        }
+
+        // 阅读进度
+        function updateProgress(){
+          const docH = document.documentElement.scrollHeight - window.innerHeight;
+          const sc = window.scrollY;
+          const p = Math.max(0, Math.min(1, docH ? sc/docH : 0));
+          const pct = Math.round(p * 100);
+          progress.style.width = pct + '%';
+          progress.setAttribute('aria-valuenow', String(pct));
+        }
+        updateProgress();
+        let ticking = false;
+        function onScroll(){
+          if (!ticking) {
+            requestAnimationFrame(() => { updateProgress(); ticking = false; });
+            ticking = true;
+          }
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        // 生成目录并高亮当前章节
+        const headings = Array.from(article.querySelectorAll('h2, h3'));
+        headings.forEach((h) => {
+          const baseId = (h.textContent || '').trim().replace(/\s+/g,'-').toLowerCase();
+          let id = baseId || 'section';
+          if (!h.id) {
+            let n = 2;
+            while (document.getElementById(id)) { id = baseId + '-' + (n++); }
+            h.id = id;
+          } else {
+            id = h.id;
+          }
+          const a = document.createElement('a');
+          a.href = '#' + id;
+          a.textContent = h.textContent;
+          const depth = h.tagName.toLowerCase();
+          const indentClass = depth === 'h3' ? 'pl-3' : '';
+          a.className = 'block px-2 py-1 rounded-lg hover:bg-base-300 ' + indentClass;
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = document.getElementById(id);
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (target) { target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
+          });
+          if (toc) { toc.appendChild(a); }
+        });
+        const tocLinks = Array.from(toc ? toc.querySelectorAll('a') : []);
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const id = entry.target.id;
+              tocLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+            }
+          })
+        }, { rootMargin: '0px 0px -70% 0px', threshold: 0.01 });
+        headings.forEach(h => observer.observe(h));
+
+        // CSDN风格：语言标签、头部与行号
+        function ensureCss(id, href) {
+          if (document.getElementById(id)) return;
+          const link = document.createElement('link');
+          link.id = id; link.rel = 'stylesheet'; link.href = href;
+          document.head.appendChild(link);
+        }
+        function ensureStyle(id, cssText) {
+          if (document.getElementById(id)) return;
+          const style = document.createElement('style');
+          style.id = id;
+          style.textContent = cssText;
+          document.head.appendChild(style);
+        }
+        function languageName(cls) {
+          const map = {
+            js: 'JavaScript', ts: 'TypeScript', json: 'JSON', html: 'HTML', css: 'CSS', bash: 'Bash', sh: 'Shell', md: 'Markdown'
+          };
+          return map[cls] || (cls ? cls.toUpperCase() : 'CODE');
+        }
+        async function resolveLocal(localUrl, cdnUrl) {
+          try {
+            const res = await fetch(localUrl, { method: 'HEAD' });
+            return res.ok ? localUrl : cdnUrl;
+          } catch(_) { return cdnUrl; }
+        }
+        async function prettifyCodeBlocks() {
+          // 动态加载高亮库与样式
+          // 使用深灰色主题：改用 highlight.js 的 github-dark，并覆盖背景为深灰
+          ensureCss('hljs-style', await resolveLocal('/libs/vendor/highlight.github-dark.min.css', 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css'));
+          // 如果之前注入了浅色覆盖样式，移除它
+          const prevLight = document.getElementById('hljs-light-override');
+          if (prevLight) prevLight.remove();
+          // 深灰主题与行号（行号不可复制）
+          ensureStyle('hljs-dark-override', `
+            /* 使用容器统一背景，让 header 与 code 同背景；限制作用域到 #article，避免影响其他区域 */
+            #article .code-container { background: #2b2b2b; border: 1px solid #3a3a3a; margin: 1rem 0; border-radius: 12px; overflow: hidden;}
+            .hljs { background: transparent; color: #e8e8e8; }
+            #article .code-container pre { 
+              background: transparent; 
+              margin-top: 0; 
+              margin-bottom: 0;
+              padding-top: 0;
+            }
+            /* 让语言与复制按钮在同一行 */
+            #article .code-container .code-header { display: flex; align-items: center; justify-content: space-between; white-space: nowrap; padding: 0.75rem;}
+            #article .code-container .code-header .code-lang { display: inline-block; }
+            #article .code-container .code-header .btn { margin-left: auto; }
+            #article .code-container .code-lines { 
+              display: block; 
+              counter-reset: ln; 
+              display: flex; 
+              flex-direction: column; 
+              padding: 0.5rem 0.75rem 0.75rem;
+            }
+            #article .code-container .code-line { 
+              display: block; 
+              position: relative; 
+              padding-left: 0.5em; 
+            }
+            #article .code-container .code-line::before {
+              counter-increment: ln;
+              content: counter(ln);
+              width: 3em;
+              text-align: right;
+              margin-right: 0.5em;
+              color: #a0a0a0;
+              border-right: 1px solid #3a3a3a;
+              padding-right: 0.5em;
+              user-select: none;
+              pointer-events: none;
+            }
+            /* Markdown 链接自动换行：长链接跟随屏幕宽度折行显示 */
+            #article .prose {
+              margin-top: 0;
+              margin-bottom: 0;
+            }
+            #article .prose a {
+              color: aquamarine;
+              white-space: normal;
+              word-break: break-word;
+              overflow-wrap: anywhere;
+            }
+            #article .prose kbd {
+              display: inline-block;
+              padding: 0.12rem 0.35rem;
+              border-radius: 0.35rem;
+              border: 1px solid rgba(255,255,255,0.14);
+              background: rgba(255,255,255,0.08);
+              box-shadow: inset 0 -1px 0 rgba(0,0,0,0.35);
+              font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+              font-size: 0.85em;
+              color: #e5e7eb;
+            }
+            #article .prose kbd + kbd { margin-left: 0.25rem; }
+          `);
+          let hljs;
+          try {
+            // Use cdnjs ESM path for highlight core to avoid jsDelivr NPM /es 404
+            const hljsUrl = await resolveLocal('/libs/vendor/highlight.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/es/highlight.min.js');
+            const mod = await import(hljsUrl);
+            hljs = mod.default || mod;
+          } catch(_) { hljs = null; }
+
+          const codeNodes = Array.from(article.querySelectorAll('pre > code'));
+          codeNodes.forEach((code) => {
+            const pre = code.parentElement;
+            if (!pre) return;
+
+            // 容器与头部
+            const container = document.createElement('div');
+            container.className = 'code-container';
+            if (pre.parentElement) { pre.parentElement.insertBefore(container, pre); }
+
+            const header = document.createElement('div');
+            header.className = 'code-header';
+            const langClass = Array.from(code.classList).find(c => c.startsWith('language-')) || '';
+            const lang = langClass.replace('language-', '') || '';
+            const langEl = document.createElement('span');
+            langEl.className = 'code-lang';
+            langEl.textContent = languageName(lang);
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'btn btn-xs';
+            copyBtn.textContent = '复制';
+            copyBtn.addEventListener('click', () => {
+              const text = code.textContent || '';
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                  copyBtn.textContent = '已复制';
+                  setTimeout(() => copyBtn.textContent = '复制', 1200);
+                  showToast('代码已复制');
+                });
+              } else {
+                const ta = document.createElement('textarea');
+                ta.value = text; document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); } catch(_) {}
+                document.body.removeChild(ta);
+                copyBtn.textContent = '已复制';
+                setTimeout(() => copyBtn.textContent = '复制', 1200);
+                showToast('代码已复制');
+              }
+            });
+            const leftWrap = document.createElement('div');
+            leftWrap.style.display = 'flex';
+            leftWrap.style.alignItems = 'center';
+            leftWrap.style.gap = '0.5rem';
+            const dots = document.createElement('div');
+            dots.className = 'code-dots';
+            dots.innerHTML = '<span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>';
+            leftWrap.appendChild(dots);
+            leftWrap.appendChild(langEl);
+            copyBtn.className = 'btn btn-ghost btn-xs';
+            header.appendChild(leftWrap);
+            header.appendChild(copyBtn);
+
+            container.appendChild(header);
+            container.appendChild(pre);
+
+            // 行号重排，并在重排后进行代码高亮（避免被后续重写覆盖）
+            const rawText = (code.textContent || '').replace(/\n$/, '');
+            let highlighted = rawText;
+            if (hljs) {
+              try {
+                if (lang) {
+                  const res = hljs.highlight(rawText, { language: lang, ignoreIllegals: true });
+                  highlighted = res.value;
+                } else {
+                  const res = hljs.highlightAuto(rawText);
+                  highlighted = res.value;
+                }
+              } catch(_) {}
+            }
+            const lines = highlighted.split('\n');
+            const newCode = document.createElement('code');
+            newCode.className = (code.className ? code.className + ' ' : '') + 'code-lines hljs';
+            lines.forEach((line, i) => {
+              const span = document.createElement('span');
+              span.className = 'code-line';
+              // 使用 innerHTML 以保留高亮标记
+              span.innerHTML = line;
+              newCode.appendChild(span);
+              if (i < lines.length - 1) newCode.appendChild(document.createTextNode('\n'));
+            });
+            pre.innerHTML = '';
+            pre.appendChild(newCode);
+          });
+        }
+        await prettifyCodeBlocks();
+
+        // 匿名开关：开启时展示主题绿色
+        const anonInput = document.getElementById('isAnon');
+        const refreshAnonToggle = () => {
+          const on = !!(anonInput && (anonInput).checked);
+          if (anonInput) { anonInput.classList.toggle('toggle-success', on); }
+        };
+        refreshAnonToggle();
+        if (anonInput) { anonInput.addEventListener('change', refreshAnonToggle); }
+
+        // 喜欢/收藏（本地存储）
+        const likeKey = 'like:' + slug;
+        const bookmarkKey = 'bookmark:' + slug;
+        function refreshLike(){
+          const liked = localStorage.getItem(likeKey) === '1';
+          btnLike.classList.toggle('bg-emerald-500', liked);
+          btnLike.classList.toggle('text-black', liked);
+        }
+        function refreshBookmark(){
+          const saved = localStorage.getItem(bookmarkKey) === '1';
+          btnBookmark.classList.toggle('bg-emerald-500', saved);
+          btnBookmark.classList.toggle('text-black', saved);
+        }
+        refreshLike(); refreshBookmark();
+        btnLike.addEventListener('click', () => {
+          const liked = localStorage.getItem(likeKey) === '1';
+          localStorage.setItem(likeKey, liked ? '0' : '1');
+          refreshLike();
+        });
+        btnBookmark.addEventListener('click', () => {
+          const saved = localStorage.getItem(bookmarkKey) === '1';
+          localStorage.setItem(bookmarkKey, saved ? '0' : '1');
+          refreshBookmark();
+        });
+        btnShare.addEventListener('click', async () => {
+          const shareData = { title: document.title, text: articleDesc, url: location.href };
+          try {
+            if (navigator.share) { await navigator.share(shareData); showToast('已分享'); }
+            else if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(location.href);
+              showToast('链接已复制');
+            }
+          } catch(_) { }
+        });
+
+        // 评论（本地存储演示）
+        const form = document.getElementById('commentForm');
+        const list = document.getElementById('commentList');
+        const storeKey = 'comments:' + slug;
+        function renderComments(){
+          const raw = localStorage.getItem(storeKey);
+          const items = raw ? JSON.parse(raw) : [];
+          if (list) { list.innerHTML = ''; }
+          items.forEach((c) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'p-3 rounded-xl bg-base-300';
+            const meta = document.createElement('div');
+            meta.className = 'text-sm text-gray-400';
+            meta.textContent = (c && c.nickname ? c.nickname : '匿名');
+            const content = document.createElement('div');
+            content.className = 'text-gray-200 mt-1';
+            content.textContent = (c && c.content ? c.content : '');
+            wrap.appendChild(meta);
+            wrap.appendChild(content);
+            if (list) { list.appendChild(wrap); }
+          });
+        }
+        renderComments();
+        if (form) {
+          form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nicknameEl = document.getElementById('nickname');
+            const emailEl = document.getElementById('email');
+            const contentEl = document.getElementById('content');
+            const isAnonEl = document.getElementById('isAnon');
+            const nickname = (nicknameEl && nicknameEl.value) || '';
+            const email = (emailEl && emailEl.value) || '';
+            const content = (contentEl && contentEl.value) || '';
+            const isAnon = !!(isAnonEl && isAnonEl.checked);
+            if (!String(content).trim()) return;
+            const raw = localStorage.getItem(storeKey);
+            const items = raw ? JSON.parse(raw) : [];
+            items.push({ nickname: isAnon ? '' : nickname, email, content, ts: Date.now() });
+            localStorage.setItem(storeKey, JSON.stringify(items));
+            if (contentEl) { contentEl.value = ''; }
+            renderComments();
+          });
+        }
+      });
+    </script>
+    <script defer src="/libs/mouse-click.js"></script>
+  </body>
+  </html>

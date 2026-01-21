@@ -1,0 +1,32 @@
+{
+  "marked": {
+    "version": "12.0.2"
+  },
+  "hljs_css": {
+    "version": "11.9.0"
+  },
+  "mermaid": {
+    "version": "10.9.5"
+  },
+  "katex_css": {
+    "version": "0.16.9"
+  },
+  "katex_auto": {
+    "version": "0.16.9"
+  },
+  "hljs_js": {
+    "version": "11.9.0"
+  },
+  "ganttDiagramJs": {
+    "version": "10.9.5"
+  },
+  "sequenceDiagramJs": {
+    "version": "10.9.5"
+  },
+  "flowDiagramV2Js": {
+    "version": "10.9.5"
+  },
+  "mermaidJs": {
+    "version": "10.9.5"
+  }
+}

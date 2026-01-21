@@ -1,18 +1,16 @@
+const API_BASE = import.meta.env.PUBLIC_API_BASE_URL;
+
 export default [
   {
-    className: "zhihu",
-    updateUrl: "https://api.swo.moe/stats/zhihu/cuicuijiang",
-  },
-  {
     className: "bili",
-    updateUrl: "https://api.swo.moe/stats/bilibili/5044093",
+    updateUrl: `${API_BASE}/stats/bilibili/48412050`,
   },
   {
     className: "github",
-    updateUrl: "https://api.swo.moe/stats/github/idealclover",
+    updateUrl: `${API_BASE}/stats/github/Devinyy`,
   },
   {
     className: "netease",
-    updateUrl: "https://api.swo.moe/stats/neteasemusic/78983390",
+    updateUrl: `${API_BASE}/stats/neteasemusic/455214094`,
   },
 ];
