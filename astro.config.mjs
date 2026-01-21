@@ -20,6 +20,9 @@ export default defineConfig({
   },
 
   // production mode
+  image: {
+    domains: ["xxx.xxxxx.com"],
+  },
   
 
   // mode: 不同的网站 cn/top/moe

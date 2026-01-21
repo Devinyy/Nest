@@ -1,6 +1,7 @@
 ---
 import StickyNav from "../../components/sticky_nav.astro";
 import CategoryIcon from "../../components/category_icon.astro";
+import { Image as AstroImage } from "astro:assets";
 import { categoryArticles, type ArticleItem } from "../../data/articles_list";
 
 // 支持通过查询参数渲染不同文章内容
@@ -189,7 +190,7 @@ const toDetailHref = (it: ArticleItem) => {
       <section class="card glass-card">
         <div class="card-body">
           <div class="flex items-start gap-4">
-            <img src={articleCover} alt={articleTitle} class="w-16 h-16 rounded-xl object-cover" />
+            <AstroImage src={articleCover} width={64} height={64} alt={articleTitle} class="w-16 h-16 rounded-xl object-cover" />
             <div class="flex-1">
               <h1 class="text-3xl md:text-4xl font-bold mb-2">{articleTitle}</h1>
               <p class="text-gray-400 mb-3">{articleDesc}</p>

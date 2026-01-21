@@ -1,5 +1,6 @@
 ---
 // src/components/article/ArticleRenderer.astro
+import { Image } from "astro:assets";
 import type { ContentBlock } from '../../types/article';
 
 interface Props {
@@ -40,10 +41,10 @@ const { blocks } = Astro.props;
           return (
             <figure class="my-16 md:my-24 flex flex-col items-center">
               <div class="relative max-w-md w-full p-2 md:p-4 bg-white/5 border border-white/5 rounded-2xl shadow-2xl rotate-1 hover:rotate-0 transition-transform duration-500 group">
-                <img 
+                <Image 
                   src={block.src} 
                   alt={block.caption || ''}
-                  loading="lazy"
+                  inferSize={true}
                   class="w-full h-auto rounded-xl"
                 />
                  {block.exif && (
@@ -65,10 +66,10 @@ const { blocks } = Astro.props;
         return (
           <figure class={`my-16 md:my-24 group relative ${block.layout === 'bleed' ? '-mx-5 md:-mx-20' : ''}`}>
             <div class={`overflow-hidden ${block.layout === 'bleed' ? 'rounded-none md:rounded-2xl' : 'rounded-xl'} shadow-2xl`}>
-              <img 
+              <Image 
                 src={block.src} 
                 alt={block.caption || ''}
-                loading="lazy"
+                inferSize={true}
                 class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]"
               />
             </div>
@@ -98,9 +99,10 @@ const { blocks } = Astro.props;
                   block.layout === 'grid-2' && idx % 2 === 1 ? 'md:mt-12' : 
                   block.layout === 'grid-2' && idx % 2 === 0 ? 'md:mb-12' : ''
                 }`}>
-                  <img 
+                  <Image 
                     src={img.src} 
-                    loading="lazy"
+                    alt={block.caption || ''}
+                    inferSize={true}
                     class="w-full h-80 md:h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   {img.exif && (

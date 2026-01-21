@@ -1,4 +1,5 @@
 ---
+import { Image as AstroImage } from "astro:assets";
 import articlesList from "../data/articles_list";
 ---
 
@@ -33,10 +34,10 @@ import articlesList from "../data/articles_list";
                 <!-- 封面：有图显示图片；无图显示占位 -->
                 {article.cover ? (
                   <figure class="w-full h-40 md:h-52">
-                    <img src={article.cover} alt={article.title} class="w-full h-full object-cover object-center" />
+                    <AstroImage src={article.cover} width={600} height={400} alt={article.title} class="w-full h-full object-cover object-center" />
                   </figure>
                 ) : (
-                    <img src={'https://dummyimage.com/395x208/9c9c9c/fff.png&text='+ article.title} alt={article.title} class="w-full h-full object-cover object-center" />
+                    <AstroImage src={'https://dummyimage.com/395x208/9c9c9c/fff.png&text='+ article.title} width={395} height={208} alt={article.title} class="w-full h-full object-cover object-center" />
                   
                 )}
 

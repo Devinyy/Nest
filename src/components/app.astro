@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import Card_2x1 from "./card_2x1.astro";
 import Card_2x2 from "./card_2x2.astro";
 import Card_2x3 from "./card_2x3.astro";
@@ -22,7 +23,9 @@ import StickyNav from "./sticky_nav.astro";
     >
       <div class="pt-10 xl:pt-20"></div>
       <div class="w-64">
-        <img
+        <Image
+          width={32}
+          height={32}
           class="w-32 h-32 md:w-52 md:h-52 rounded-full"
           src={info.imgUrl}
           alt={info.title}

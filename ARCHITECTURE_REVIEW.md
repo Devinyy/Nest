@@ -31,22 +31,9 @@
 - **图标现代化**：使用 **SVG Components** 或 **Icon Fonts**（如 Iconify），结合 Tailwind 类控制颜色和大小，更加灵活且清晰。
 - **字体优化**：使用 `font-display: swap` 并在构建流程中加入字体压缩（fontmin）。
 
-### 2.5 Performance (性能)
-**现状**：
-使用原生 `<img>` 标签加载图片。
-**建议**：
-- **使用 Astro `<Image />` 组件**：它可以自动生成 WebP/AVIF 格式，并根据屏幕尺寸生成响应式 `srcset`，显著提升 LCP（最大内容绘制）指标。
-
----
-
 ## 3. Refactoring Roadmap (重构路线图)
 
 为了稳步提升项目质量，建议按以下优先级进行重构：
-
-### Phase 1: Quick Wins (速赢项)
-- [ ] **配置抽离**：将 `astro.config.mjs` 中的 IP 移至 `.env`。
-- [ ] **脚本模块化**：将 `app.astro` 中的 JS 逻辑拆分为独立 TS 文件。
-- [ ] **图片优化**：将首页关键图片（如头像、卡片封面）替换为 Astro `<Image />` 组件。
 
 ### Phase 2: Structural Improvements (结构改良)
 - [ ] **组件重命名**：按功能而非尺寸重构 Card 组件目录。
