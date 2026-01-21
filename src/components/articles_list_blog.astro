@@ -2,7 +2,15 @@
 import { Image as AstroImage } from "astro:assets";
 import articlesList from "../data/articles_list";
 
-const toDetailHref = (article) => {
+const toDetailHref = (article: {
+  slug?: string;
+  title: string;
+  subdesc?: string;
+  category?: string;
+  time?: string;
+  cover?: string;
+  tags?: string[];
+}) => {
   const slug = article.slug || 'web-design-pattern';
   const params = new URLSearchParams({
     slug,
@@ -125,7 +133,8 @@ const toDetailHref = (article) => {
 
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
-        const index = parseInt(tab.getAttribute("data-tab-index"));
+        const attr = tab.getAttribute("data-tab-index");
+        const index = attr ? parseInt(attr, 10) : 0;
         setActiveTab(index);
       });
     });

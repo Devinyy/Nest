@@ -126,7 +126,8 @@ import articlesList from "../data/articles_list";
 
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
-        const index = parseInt(tab.getAttribute("data-tab-index"));
+        const attr = tab.getAttribute("data-tab-index");
+        const index = attr ? parseInt(attr) : 0;
         setActiveTab(index);
       });
     });
