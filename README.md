@@ -101,10 +101,33 @@ yarn preview
 - [ ] 增加个人配置管理功能，支持在线修改站点元数据。
 
 ### 3. 搭建流水线 Docker 一键部署 🐳
-- [ ] 编写 `Dockerfile`，优化镜像体积（多阶段构建）。
-- [ ] 配置 CI/CD 流水线（如 GitHub Actions, Jenkins 或 GitLab CI）。
-- [ ] 实现自动化构建、测试和部署到服务器。
-- [ ] 支持 Docker Compose 一键启动完整环境（前端 + 后端 + 数据库）。
+- [x] 编写 `Dockerfile`，优化镜像体积（多阶段构建）。
+- [x] 配置 CI/CD 流水线（如 GitHub Actions, Jenkins 或 GitLab CI）。
+- [x] 实现自动化构建、测试和部署到服务器。
+- [x] 支持 Docker Compose 一键启动完整环境（前端 + 后端 + 数据库）。
+
+## 🐳 Docker 部署
+
+本项目支持 Docker 一键部署，无需在服务器安装 Node.js 环境。
+
+### 使用 Docker Compose（推荐）
+
+1. 确保服务器已安装 Docker 和 Docker Compose。
+2. 上传 `docker-compose.yml`, `Dockerfile`, `nginx.conf` 和源代码到服务器。
+3. 运行启动命令：
+
+```bash
+docker-compose up -d --build
+```
+
+访问 `http://localhost:8080` (或配置的端口) 即可查看。
+
+### 仅构建镜像
+
+```bash
+docker build -t homepage:latest .
+docker run -d -p 8080:80 homepage:latest
+```
 
 ## 📃 许可证
 
