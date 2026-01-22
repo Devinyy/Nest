@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.PUBLIC_API_BASE_URL;
+const API_BASE = import.meta.env.PUBLIC_API_BASE_URL || "";
 
 export default [
   {
