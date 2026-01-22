@@ -1,11 +1,14 @@
-version: '3.8'
-
 services:
   homepage:
     container_name: homepage
-    build: .
+    build:
+      context: .
+      args:
+        - PUBLIC_API_BASE_URL=${PUBLIC_API_BASE_URL:-}
+        # 修改这里：如果没有真实域名，强制留空，这样 Astro 会生成相对路径
+        - ASTRO_SITE=${ASTRO_SITE:-""} 
     restart: always
     ports:
-      - "8080:80"
+      - "80:80"
     environment:
       - TZ=Asia/Shanghai

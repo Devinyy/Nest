@@ -1,0 +1,56 @@
+name: Deploy to Aliyun
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ 47.103.9.13 }}
+          username: ${{ root }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            # 1. 创建项目目录
+            mkdir -p /root/homepage
+            
+            # 2. 拉取最新代码 (如果是基于 Git 拉取模式)
+            # cd /root/homepage
+            # git pull origin main
+            
+            # 或者：如果不想在服务器装 git，这里假设我们已经通过 SCP/Rsync 把代码传过去了
+            # 为了演示流水线，通常我们会构建镜像推送到仓库，或者直接 scp 代码
+            # 这里演示最简单的：直接在 Runner 里打包代码然后 SCP 过去
+            
+      - name: Copy files via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ 47.103.9.13 }}
+          username: ${{ root }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "."
+          target: "/root/homepage"
+          rm: true # 覆盖
+          strip_components: 0
+          exclude: "node_modules,dist,.git"
+
+      - name: Start Docker
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ 47.103.9.13 }}
+          username: ${{ root }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /root/homepage
+            # 确保 ASTRO_SITE 为空或设为域名，防止内网 IP 问题
+            export ASTRO_SITE=""
+            docker-compose up -d --build --remove-orphans
+            docker image prune -f
