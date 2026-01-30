@@ -19,7 +19,8 @@ echo "🚀 开始部署到阿里云服务器 ($SERVER_IP)..."
 
 # 0. 本地构建
 echo "🔨 正在本地构建项目..."
-npm run build
+# 强制指定 HTTPS 域名进行构建，解决 Mixed Content 问题
+ASTRO_SITE="https://devinnest.top" npm run build
 # if [ $? -ne 0 ]; then
 #   echo "❌ 本地构建失败，请检查代码"
 #   exit 1
@@ -69,10 +70,14 @@ ssh "$SERVER_USER@$SERVER_IP" "cd $PROJECT_DIR && \
   # 自动检测 Compose 命令并启动
   if docker compose version >/dev/null 2>&1; then
     echo "🐳 使用 docker compose 启动服务..."
-    ASTRO_SITE='' docker compose up -d --build --remove-orphans
+    # 强制重新构建，不使用缓存，确保 CSS/JS 更新
+    ASTRO_SITE='' docker compose build --no-cache
+    ASTRO_SITE='' docker compose up -d --remove-orphans
   else
     echo "🐳 使用 docker-compose 启动服务..."
-    ASTRO_SITE='' docker-compose up -d --build --remove-orphans
+    # 强制重新构建，不使用缓存，确保 CSS/JS 更新
+    ASTRO_SITE='' docker-compose build --no-cache
+    ASTRO_SITE='' docker-compose up -d --remove-orphans
   fi && \
   echo '清理未使用的镜像...' && \
   docker image prune -f"
