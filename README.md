@@ -97,6 +97,7 @@ yarn preview
     - [x] Shell 脚本一键部署 (`deploy.sh`)
     - [x] GitHub Actions 自动部署 (`.github/workflows/deploy.yml`)
 - [ ] **PC 端管理后台**: 计划开发基于 React/Vue 的后台管理系统，用于管理博客内容和动态。
+- [ ] **Keystatic**
 
 ## 🐳 部署指南
 
