@@ -110,34 +110,7 @@ async function ensureVendors() {
     }
   }
 
-  const manifest = {
-    marked: { file: "marked.esm.js", url: "https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js", version: "12.0.2" },
-    // Use ESM builds from reliable CDNs
-    // DOMPurify ESM via unpkg module wrapper to avoid jsDelivr 404
-    dompurify: { file: "dompurify.es.js", url: "https://unpkg.com/dompurify@3.0.8/dist/purify.min.js?module", version: "3.0.8" },
-    hljs_js: { file: "highlight.min.js", url: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js", version: "11.9.0" },
-    hljs_css: { file: "highlight.github-dark.min.css", url: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css", version: "11.9.0" },
-    mermaid: { file: "mermaid.esm.min.mjs", urls: [
-      "https://unpkg.com/mermaid@10.9.0/dist/mermaid.esm.min.mjs",
-      "https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.esm.min.mjs",
-    ], version: "10.9.0" },
-    mermaidJs: { file: "mermaid-00886c59.js", urls: [
-      "https://unpkg.com/mermaid@10.9.0/dist/mermaid-00886c59.js",
-      "https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid-00886c59.js",
-    ], version: "10.9.0" },
-    ganttDiagramJs: { file: "ganttDiagram-d5eca442.js", urls: [
-      "https://unpkg.com/mermaid@10.9.0/dist/ganttDiagram-d5eca442.js",
-      "https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/ganttDiagram-d5eca442.js",
-    ], version: "10.9.0" },
-    sequenceDiagramJs: { file: "sequenceDiagram-a3c91cc7.js", urls: [
-      "https://unpkg.com/mermaid@10.9.0/dist/sequenceDiagram-a3c91cc7.js",
-      "https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/sequenceDiagram-a3c91cc7.js",
-    ], version: "10.9.0" },
-    flowDiagramV2Js: { file: "flowDiagram-v2-8dd8b966.js", urls: [
-      "https://unpkg.com/mermaid@10.9.0/dist/flowDiagram-v2-8dd8b966.js",
-      "https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/flowDiagram-v2-8dd8b966.js",
-    ], version: "10.9.0" },
-  };
+  const manifest = {};
 
   const manifestPath = path.join(vendorDir, "manifest.json");
   let current = {};
