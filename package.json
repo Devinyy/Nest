@@ -3,9 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "npm run prebuild && astro dev --host",
-    "start": "npm run prebuild && astro dev --host",
-    "build": "astro check && astro build",
+    "dev": "npm run prebuild && astro dev --mode development --host",
+    "start": "npm run prebuild && astro dev --mode development --host",
+    "build": "astro check && astro build --mode production",
     "preview": "astro preview",
     "astro": "astro",
     "prebuild": "node build/prebuild",

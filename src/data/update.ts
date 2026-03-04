@@ -1,16 +1,14 @@
-const API_BASE = import.meta.env.PUBLIC_API_BASE_URL || "";
-
 export default [
   {
     className: "bili",
-    updateUrl: `${API_BASE}/stats/bilibili/48412050`,
+    updateUrl: "https://api.swo.moe/stats/bilibili/48412050",
   },
   {
     className: "github",
-    updateUrl: `${API_BASE}/stats/github/Devinyy`,
+    updateUrl: "https://api.swo.moe/stats/github/Devinyy",
   },
   {
     className: "netease",
-    updateUrl: `${API_BASE}/stats/neteasemusic/455214094`,
+    updateUrl: "https://api.swo.moe/stats/neteasemusic/455214094",
   },
 ];

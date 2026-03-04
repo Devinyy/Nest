@@ -1,31 +1,28 @@
 ---
 import { Image as AstroImage } from "astro:assets";
-import articlesList from "../data/articles_list";
+import { homeApi, type LatestArticlesResponse } from "../api/home";
+
+let latestArticles: LatestArticlesResponse | null = null;
+try {
+  latestArticles = await homeApi.getLatestArticles();
+} catch (error) {
+  console.error("Failed to fetch latest articles:", error);
+}
 ---
 
 <div
   class="card max-lg:card-compact rounded-2xl shadow-xl shadow-accent hover:bg-primary-focus hover:shadow-gray-500 bg-primary w-full lg:max-w-[54rem] min-h-[6rem] mb-8"
 >
   <div class="card-body">
-    <!-- 博客文章分类标题 -->
-    <!-- <div class="tabs tabs-boxed rounded-xl max-sm:py-2">
-      {
-        articlesList.map((articles, index) => (
-          <div class="max-sm:px-2 tab tab-sm md:tab-lg" data-tab-index={index}>
-            {articles.title}
-          </div>
-        ))
-      }
-    </div> -->
-
     {
-      articlesList.map((articles, index) => (
-        <div
-          class={`tab-content ${index === 0 ? "block" : "hidden"}`}
-          data-tab-index={index}
-        >
+      !latestArticles || latestArticles.articles.length === 0 ? (
+        <div class="text-center text-gray-400 py-10">
+          <p>暂无文章内容</p>
+        </div>
+      ) : (
+        <div class="tab-content block">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-[10px]">
-            {articles.articles.map((article) => (
+            {latestArticles.articles.map((article) => (
               <a
                 class="card rounded-xl bg-neutral hover:bg-base-300 overflow-hidden w-full"
                 href={article.url}
@@ -55,7 +52,7 @@ import articlesList from "../data/articles_list";
                     <!-- 元信息 -->
                     <div class="flex items-center gap-3 text-xs text-gray-400">
                       <span class="inline-flex items-center gap-1">
-                        <span class="i-calendar">�</span>
+                        <span class="i-calendar">📅</span>
                         {article.time}
                       </span>
                       {article.views && (
@@ -87,14 +84,14 @@ import articlesList from "../data/articles_list";
           <div class="card-actions justify-end">
             <a
               class="btn btn-md btn-wide rounded-xl capitalize border-0 max-w-full text-xl"
-              href={articles.url}
+              href={latestArticles.url}
               target="_blank"
             >
               查看更多
             </a>
           </div>
         </div>
-      ))
+      )
     }
   </div>
 </div>
