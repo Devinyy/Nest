@@ -111,7 +111,7 @@ yarn preview
    ```bash
    SERVER_IP="x.x.x.x"           # 您的服务器公网 IP
    SERVER_USER="root"            # 服务器用户名
-   PROJECT_DIR="/root/homepage"  # 服务器上存放项目的路径
+   PROJECT_DIR="/opt/homepage"  # 服务器上存放项目的路径
    ```
 2. 在终端运行脚本：
    ```bash

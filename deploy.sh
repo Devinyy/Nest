@@ -7,7 +7,7 @@
 # ⚠️ 请修改以下配置为您的服务器信息
 SERVER_IP="47.103.9.13"           # 服务器公网 IP
 SERVER_USER="root"            # 服务器用户名
-PROJECT_DIR="/root/homepage"  # 服务器上存放项目的路径
+PROJECT_DIR="/opt/homepage"  # 服务器上存放项目的路径
 
 # 检查是否修改了默认 IP
 if [ "$SERVER_IP" = "x.x.x.x" ]; then
