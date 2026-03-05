@@ -5,7 +5,8 @@ import { snippetApi, type TimelineGroup } from "../api/snippet";
 let fragmentTimeline: TimelineGroup[] = [];
 
 try {
-  fragmentTimeline = await snippetApi.getSnippetTimeline();
+  const res = await snippetApi.getSnippetTimeline();
+  fragmentTimeline = Array.isArray(res) ? res : [];
 } catch (error) {
   console.error("Failed to fetch snippet timeline:", error);
   // 这里可以添加 fallback 数据或错误处理逻辑
