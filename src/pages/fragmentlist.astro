@@ -1,11 +1,15 @@
 ---
 import StickyNav from "../components/sticky_nav.astro";
-import timeline from "../data/fragment_timeline";
-import type { TimelineGroup } from "../data/fragment_timeline";
-import { dailyArticles } from "../data/daily_articles";
+import { snippetApi, type TimelineGroup } from "../api/snippet";
 
-const fragmentTimeline: TimelineGroup[] = timeline;
-const validIds = new Set(dailyArticles.map(a => a.id));
+let fragmentTimeline: TimelineGroup[] = [];
+
+try {
+  fragmentTimeline = await snippetApi.getSnippetTimeline();
+} catch (error) {
+  console.error("Failed to fetch snippet timeline:", error);
+  // 这里可以添加 fallback 数据或错误处理逻辑
+}
 
 // 简单的辅助函数，用于增强展示效果
 function getTimelineDotColor(index: number) {
@@ -117,22 +121,23 @@ function getTimelineDotColor(index: number) {
                         <div class="timeline-connector"></div>
 
                         {group.items.map((item, index) => {
-                            const hasContent = validIds.has(item.blogId);
+                            const href = item.url || (item.blogId ? `/blog/daily?id=${item.blogId}` : null);
+                            const hasContent = !!href;
+                            
                             return (
                             <div class="relative flex gap-6 items-start group">
                                 <!-- 时间点装饰 -->
                                 <div class={`absolute left-[11px] top-2 w-2 h-2 rounded-full ${getTimelineDotColor(index)} ring-4 ring-base-100 z-10 group-hover:scale-125 transition-transform duration-300`}></div>
                                 
                                 <!-- 内容卡片 -->
-                                <a href={hasContent ? `/blog/daily?id=${item.blogId}` : '/404'} class="flex-1 fragment-card bg-white/5 backdrop-blur-md border border-white/5 rounded-2xl p-5 md:p-6 ml-6 w-full hover:border-emerald-500/20 hover:bg-white/10 cursor-pointer">
+                                <a href={href || 'javascript:void(0)'} class={`flex-1 fragment-card bg-white/5 backdrop-blur-md border border-white/5 rounded-2xl p-5 md:p-6 ml-6 w-full hover:border-emerald-500/20 hover:bg-white/10 ${hasContent ? 'cursor-pointer' : 'cursor-default pointer-events-none'}`}>
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                                         <h3 class="text-xl font-semibold text-gray-100 group-hover:text-emerald-300 transition-colors">
                                             {item.title}
                                         </h3>
                                         <time class="text-sm font-mono text-gray-500 shrink-0 bg-black/20 px-2 py-1 rounded">
                                             {item.time}
-                                        </time>
-                                    </div>
+                                        </time>                                    </div>
                                     
                                     {item.content && (
                                         <p class="text-gray-400 leading-relaxed text-sm md:text-base border-t border-white/5 pt-3 mt-1">
