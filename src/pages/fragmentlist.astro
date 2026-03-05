@@ -121,7 +121,8 @@ function getTimelineDotColor(index: number) {
                         <div class="timeline-connector"></div>
 
                         {group.items.map((item, index) => {
-                            const href = item.url || (item.blogId ? `/blog/daily?id=${item.blogId}` : null);
+                            const itemId = item.id || item.blogId;
+                            const href = item.url || (itemId ? `/blog/daily?id=${itemId}` : null);
                             const hasContent = !!href;
                             
                             return (
