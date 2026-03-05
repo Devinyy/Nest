@@ -1,31 +1,28 @@
 ---
 import { Image as AstroImage } from "astro:assets";
-import articlesList from "../data/articles_list";
+import { homeApi, type LatestArticlesResponse } from "../api/home";
+
+let latestArticles: LatestArticlesResponse | null = null;
+try {
+  latestArticles = await homeApi.getLatestArticles();
+} catch (error) {
+  console.error("Failed to fetch latest articles:", error);
+}
 ---
 
 <div
-  class="card max-lg:card-compact rounded-2xl shadow-xl shadow-accent hover:bg-primary-focus hover:shadow-gray-500 bg-primary w-full lg:max-w-[54rem] min-h-[6rem] mb-8"
+  class="card max-lg:card-compact rounded-2xl shadow-xl shadow-accent hover:bg-primary-focus hover:shadow-gray-500 bg-primary w-full lg:max-w-[54rem] min-h-[6rem] mb-8 group"
 >
   <div class="card-body">
-    <!-- 博客文章分类标题 -->
-    <!-- <div class="tabs tabs-boxed rounded-xl max-sm:py-2">
-      {
-        articlesList.map((articles, index) => (
-          <div class="max-sm:px-2 tab tab-sm md:tab-lg" data-tab-index={index}>
-            {articles.title}
-          </div>
-        ))
-      }
-    </div> -->
-
     {
-      articlesList.map((articles, index) => (
-        <div
-          class={`tab-content ${index === 0 ? "block" : "hidden"}`}
-          data-tab-index={index}
-        >
+      !latestArticles || latestArticles.articles.length === 0 ? (
+        <div class="text-center text-gray-400 py-10">
+          <p>暂无文章内容</p>
+        </div>
+      ) : (
+        <div class="tab-content block">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-[10px]">
-            {articles.articles.map((article) => (
+            {latestArticles.articles.map((article) => (
               <a
                 class="card rounded-xl bg-neutral hover:bg-base-300 overflow-hidden w-full"
                 href={article.url}
@@ -55,7 +52,7 @@ import articlesList from "../data/articles_list";
                     <!-- 元信息 -->
                     <div class="flex items-center gap-3 text-xs text-gray-400">
                       <span class="inline-flex items-center gap-1">
-                        <span class="i-calendar">�</span>
+                        <span class="i-calendar">📅</span>
                         {article.time}
                       </span>
                       {article.views && (
@@ -82,19 +79,28 @@ import articlesList from "../data/articles_list";
             ))}
           </div>
 
-          <div class="pt-2" />
-
-          <div class="card-actions justify-end">
-            <a
-              class="btn btn-md btn-wide rounded-xl capitalize border-0 max-w-full text-xl"
-              href={articles.url}
-              target="_blank"
-            >
-              查看更多
-            </a>
+          <div class="max-h-0 overflow-hidden opacity-0 group-hover:max-h-24 group-hover:opacity-100 transition-all duration-500 ease-in-out">
+            <div class="pt-4" />
+            <div class="card-actions justify-center pb-2">
+              <a
+                class="btn btn-outline border-white text-white btn-wide rounded-full gap-2 group/btn hover:bg-white hover:text-neutral hover:border-white hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-all duration-300"
+                href="/bloglist"
+              >
+                <span>查看更多</span>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  class="h-5 w-5 transform transition-transform duration-300 group-hover/btn:translate-x-1" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
-      ))
+      )
     }
   </div>
 </div>

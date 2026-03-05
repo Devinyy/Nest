@@ -6,7 +6,7 @@ export type BlogCategory = {
 };
 
 export const categories: BlogCategory[] = [
-  { name: "时间线", icon: "timeline", href: "/blog" },
+  { name: "时间线", icon: "timeline", href: "/bloglist" },
   { name: "技术", icon: "code", count: 128, href: "/category/tech" },
   { name: "设计", icon: "palette", count: 75, href: "/category/design" },
   { name: "生活", icon: "home", count: 92, href: "/category/life" },

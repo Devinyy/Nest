@@ -3,9 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "npm run prebuild && astro dev --host",
-    "start": "npm run prebuild && astro dev --host",
-    "build": "astro check && astro build",
+    "dev": "npm run prebuild && astro dev --mode development --host",
+    "start": "npm run prebuild && astro dev --mode development --host",
+    "build": "astro check && astro build --mode production",
     "preview": "astro preview",
     "astro": "astro",
     "prebuild": "node build/prebuild",
@@ -19,6 +19,10 @@
     "alova": "^3.5.0",
     "astro": "^4.11.5",
     "daisyui": "^2.6.0",
+    "dompurify": "^3.3.1",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.16.33",
+    "marked": "^17.0.3",
     "mermaid": "^10.9.0",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.3"

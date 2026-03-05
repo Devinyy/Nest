@@ -1,9 +1,3 @@
-function resolveUrl(localUrl, cdnUrl) {
-  return fetch(localUrl, { method: 'HEAD' })
-    .then((res) => (res.ok ? localUrl : cdnUrl))
-    .catch(() => cdnUrl);
-}
-
 export async function renderMarkdownToElement(text, el, options = {}) {
   const opts = {
     highlight: true,
@@ -17,8 +11,7 @@ export async function renderMarkdownToElement(text, el, options = {}) {
   const safeText = String(text ?? '');
 
   try {
-    const markedUrl = await resolveUrl('/libs/vendor/marked.esm.js', 'https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.esm.js');
-    const { marked } = await import(markedUrl);
+    const { marked } = await import('marked');
     marked.use({ gfm: true, breaks: true });
 
     // Preprocess Markdown to support ==mark==, ~sub~, ^sup^, and footnotes [^id]
@@ -39,11 +32,9 @@ export async function renderMarkdownToElement(text, el, options = {}) {
     // Sanitize
     if (opts.sanitize) {
       try {
-        // Use unpkg module wrapper to get an ESM build
-        const dpUrl = await resolveUrl('/libs/vendor/dompurify.es.js', 'https://unpkg.com/dompurify@3.0.8/dist/purify.min.js?module');
-        const mod = await import(dpUrl);
+        const mod = await import('dompurify');
         const DP = mod.default || mod;
-        const sanitizeFn = DP.sanitize || mod.sanitize;
+        const sanitizeFn = DP.sanitize || DP;
         if (typeof sanitizeFn === 'function') {
           // 保留用于扩展标记的标签：kbd/mark/sub/sup/section，并允许表格单元格的对齐属性
           html = sanitizeFn(html, {
@@ -136,11 +127,8 @@ export async function renderMarkdownToElement(text, el, options = {}) {
     // Syntax highlight
     if (opts.highlight) {
       try {
-        const cssUrl = await resolveUrl('/libs/vendor/highlight.github-dark.min.css', 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css');
-        await ensureCss('hljs-style', cssUrl);
-        // Use cdnjs ESM path for highlight core
-        const hljsUrl = await resolveUrl('/libs/vendor/highlight.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/es/highlight.min.js');
-        const hljs = await import(hljsUrl);
+        await import('highlight.js/styles/github-dark.min.css');
+        const hljs = await import('highlight.js');
         el.querySelectorAll('pre code').forEach((block) => {
           try { hljs.default.highlightElement(block); } catch (_) {}
         });
@@ -162,11 +150,7 @@ export async function renderMarkdownToElement(text, el, options = {}) {
             if (parent) parent.replaceWith(div);
             ready.push(div);
           });
-          const mmdUrl = await resolveUrl(
-            '/libs/vendor/mermaid.esm.min.mjs',
-            'https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs'
-          );
-          const mermaid = await import(mmdUrl);
+          const mermaid = await import('mermaid');
           mermaid.default.initialize({ startOnLoad: false });
           mermaid.default.run({ nodes: ready });
         }
@@ -176,11 +160,10 @@ export async function renderMarkdownToElement(text, el, options = {}) {
     // KaTeX math rendering
     if (opts.math) {
       try {
-        const katexCssUrl = await resolveUrl('/libs/vendor/katex.min.css', 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
-        await ensureCss('katex-style', katexCssUrl);
-        const autoUrl = await resolveUrl('/libs/vendor/auto-render.mjs', 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.mjs');
-        const auto = await import(autoUrl);
-        auto.renderMathInElement(el, {
+        await import('katex/dist/katex.min.css');
+        const mod = await import('katex/dist/contrib/auto-render.mjs');
+        const renderMathInElement = mod.default || mod.renderMathInElement || mod;
+        renderMathInElement(el, {
           delimiters: [
             { left: '$$', right: '$$', display: true },
             { left: '$', right: '$', display: false },
@@ -268,13 +251,4 @@ export async function renderMarkdownFromUrl(url, el, options = {}) {
   const res = await fetch(url);
   const text = await res.text();
   return renderMarkdownToElement(text, el, options);
-}
-
-async function ensureCss(id, href) {
-  if (document.getElementById(id)) return;
-  const link = document.createElement('link');
-  link.id = id;
-  link.rel = 'stylesheet';
-  link.href = href;
-  document.head.appendChild(link);
 }

@@ -1,47 +1,39 @@
 ---
 import StickyNav from "../../components/sticky_nav.astro";
 import CategoryIcon from "../../components/category_icon.astro";
-import { Image as AstroImage } from "astro:assets";
-import { categoryArticles, type ArticleItem } from "../../data/articles_list";
 
-// 支持通过查询参数渲染不同文章内容
+// 支持通过查询参数渲染不同文章内容 
 const url = new URL(Astro.request.url);
 const qp = url.searchParams;
-const slug = qp.get('slug') || 'web-design-pattern';
-const articleTitle = qp.get('title') || "现代 Web 设计的演进与最佳实践";
-const articleDesc = qp.get('desc') || "样式与交互统一、舒适顺畅的设计范式整理";
-const articleCategory = qp.get('category') || "设计";
-const articleDate = qp.get('date') || "2025-08-31";
-const articleTags = (qp.getAll('tag')?.length ? qp.getAll('tag') : (qp.get('tags')?.split(',').filter(Boolean) || ["CSS", "交互", "设计系统"])) as string[];
-const articleCover = qp.get('cover') || "/icons/introduction.png";
+const id = qp.get('id');
 
-// 文章正文通过 slug 动态载入（支持 *.md 原文）
+let slug = qp.get('slug') || "未知";
+let articleTitle = qp.get('title') || "未知";
+let articleDesc = qp.get('desc') || "未知";
+let articleCategory = qp.get('category') || "未知";
+let articleDate = qp.get('date') || "未知时间";
+let articleTags = (qp.getAll('tag')?.length ? qp.getAll('tag') : (qp.get('tags')?.split(',').filter(Boolean) || ["未知"])) as string[];
+let articleCover = qp.get('cover') || "https://dummyimage.com/600x400/000/fff&text=%E6%9C%AA%E7%9F%A5";
 let markdownRaw: string = "";
-const mdFiles = import.meta.glob("../../content/blog/*.md", { as: 'raw' });
-for (const [path, loader] of Object.entries(mdFiles)) {
-  if (path.endsWith(`/${slug}.md`)) {
-    markdownRaw = await loader();
-    break;
+
+// 移除服务端 API 调用，改为客户端获取
+// if (id) { ... } 逻辑已移除
+
+if (!id && !markdownRaw) {
+  // 文章正文通过 slug 动态载入（支持 *.md 原文）
+  // 仅当没有 id 时尝试服务端加载本地文件（兼容旧的 SSG 逻辑）
+  const mdFiles = import.meta.glob("../../content/blog/*.md", { as: 'raw' });
+  for (const [path, loader] of Object.entries(mdFiles)) {
+    if (path.endsWith(`/${slug}.md`)) {
+      markdownRaw = await loader();
+      break;
+    }
   }
 }
+
 if (!markdownRaw) {
   markdownRaw = `# 内容未找到\n\n未找到 slug 为 \`${slug}\` 的文章。`;
 }
-
-// 统一构建 detail 链接（用于相关文章等位置）
-const toDetailHref = (it: ArticleItem) => {
-  const s = (it as any).slug || 'web-design-pattern';
-  const params = new URLSearchParams({
-    slug: s,
-    title: it.title,
-    desc: it.subdesc || '',
-    category: it.category || articleCategory,
-    date: it.time || '',
-    cover: it.cover || ''
-  });
-  for (const t of (it.tags || [])) params.append('tag', t);
-  return `/blog/detail?${params.toString()}`;
-};
 ---
 
 <!doctype html>
@@ -190,18 +182,21 @@ const toDetailHref = (it: ArticleItem) => {
       <section class="card glass-card">
         <div class="card-body">
           <div class="flex items-start gap-4">
-            <AstroImage src={articleCover} width={64} height={64} alt={articleTitle} class="w-16 h-16 rounded-xl object-cover" />
+            <img id="article-cover" src={articleCover} width="64" height="64" alt={articleTitle} class="w-16 h-16 rounded-xl object-cover" />
             <div class="flex-1">
-              <h1 class="text-3xl md:text-4xl font-bold mb-2">{articleTitle}</h1>
-              <p class="text-gray-400 mb-3">{articleDesc}</p>
+              <h1 id="article-title" class="text-3xl md:text-4xl font-bold mb-2">{articleTitle}</h1>
+              <p id="article-desc" class="text-gray-400 mb-3">{articleDesc}</p>
               <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-                <span class="text-gray-400">{articleDate}</span>
-                <span class="px-2 py-1 rounded-lg bg-base-300 text-gray-200 flex items-center gap-1">
-                  <CategoryIcon name="palette" class="w-4 h-4" />{articleCategory}
+                <span id="article-date" class="text-gray-400">{articleDate}</span>
+                <span id="article-category" class="px-2 py-1 rounded-lg bg-base-300 text-gray-200 flex items-center gap-1">
+                  <CategoryIcon name="palette" class="w-4 h-4" />
+                  <span id="article-category-text">{articleCategory}</span>
                 </span>
-                {articleTags.map((t) => (
-                  <span class="px-2 py-1 rounded-full bg-base-300 text-gray-200">{t}</span>
-                ))}
+                <span id="article-tags-container" class="contents">
+                  {articleTags.map((t) => (
+                    <span class="px-2 py-1 rounded-full bg-base-300 text-gray-200">{t}</span>
+                  ))}
+                </span>
                 <div class="ml-auto flex items-center gap-2">
                   <button id="btn-like" class="btn btn-sm rounded-xl btn-outline" aria-label="喜欢文章" title="喜欢">喜欢</button>
                   <button id="btn-bookmark" class="btn btn-sm rounded-xl btn-outline" aria-label="收藏文章" title="收藏">收藏</button>
@@ -253,20 +248,42 @@ const toDetailHref = (it: ArticleItem) => {
         <div class="card-body">
           <h3 class="text-xl font-bold">相关文章</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-3">
-            {categoryArticles["设计"]?.slice(0,4).map((it) => (
-              <a href={toDetailHref(it)} class="block p-3 rounded-xl bg-base-300 hover:bg-base-200">
-                <div class="text-sm text-gray-400">{it.time}</div>
-                <div class="font-medium text-gray-200 mt-1">{it.title}</div>
-                <div class="text-xs text-gray-500 mt-1 line-clamp-2">{it.subdesc}</div>
-              </a>
-            ))}
+            <div class="text-sm text-gray-400">暂无文章内容</div>
           </div>
         </div>
       </section>
     </main>
 
-    <script type="module" define:vars={{ slug, articleDesc, articleMarkdown: markdownRaw }}>
+    <script define:vars={{ id, slug, articleDesc, articleMarkdown: markdownRaw }}>
+      window.blogParams = { id, slug, articleDesc, articleMarkdown };
+    </script>
+
+    <script>
+      import { blogApi } from "../../api/blog";
+
+      // 定义 window 上的自定义属性类型
+      declare global {
+        interface Window {
+          blogParams: {
+            id?: string | null;
+            slug?: string;
+            articleDesc?: string;
+            articleMarkdown?: string;
+          };
+        }
+      }
+
       document.addEventListener('DOMContentLoaded', async () => {
+        let { id, slug, articleDesc, articleMarkdown } = window.blogParams || {};
+
+        // 如果 blogParams 中没有 id，尝试从 URL 参数获取
+        if (!id) {
+          const urlParams = new URLSearchParams(window.location.search);
+          id = urlParams.get('id');
+        }
+
+        let markdownContent = articleMarkdown;
+
         const progress = document.getElementById('readingProgress');
         const article = document.getElementById('article');
         const toc = document.getElementById('toc');
@@ -274,9 +291,57 @@ const toDetailHref = (it: ArticleItem) => {
         const btnBookmark = document.getElementById('btn-bookmark');
         const btnShare = document.getElementById('btn-share');
         const mdEl = document.getElementById('md-content');
+        console.log('Fetching blog detail for id:', id);
+        // 如果有 ID，尝试从客户端 API 获取最新内容
+        if (id) {
+           try {
+             // 简单的加载状态
+             if (mdEl) {
+               mdEl.innerHTML = '<div class="flex justify-center py-20"><span class="loading loading-dots loading-lg"></span></div>';
+             }
+             
+             const blog = await blogApi.getBlogDetail(id).send();
+             if (blog) {
+                markdownContent = blog.content;
+                
+                // 更新页面元数据与内容
+                document.title = `${blog.title} · Devin's Nest`;
+                const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+                if (metaDesc) metaDesc.content = blog.desc || '';
+                
+                const titleEl = document.getElementById('article-title');
+                if (titleEl) titleEl.textContent = blog.title;
+                
+                const descEl = document.getElementById('article-desc');
+                if (descEl) descEl.textContent = blog.desc || '';
+
+                const dateEl = document.getElementById('article-date');
+                if (dateEl) dateEl.textContent = blog.date;
+
+                const catEl = document.getElementById('article-category-text');
+                if (catEl) catEl.textContent = blog.category?.name || '默认';
+
+                const coverEl = document.getElementById('article-cover') as HTMLImageElement | null;
+                if (coverEl && blog.cover) coverEl.src = blog.cover;
+
+                const tagsContainer = document.getElementById('article-tags-container');
+                if (tagsContainer && blog.tags) {
+                   tagsContainer.innerHTML = blog.tags.map(t => 
+                     `<span class="px-2 py-1 rounded-full bg-base-300 text-gray-200">${t}</span>`
+                   ).join('');
+                }
+             }
+           } catch (e: any) {
+             console.error("Client-side fetch failed", e);
+             if (mdEl) {
+               mdEl.innerHTML = `<div class="alert alert-error">加载失败: ${e.message || '未知错误'}</div>`;
+             }
+             markdownContent = ''; 
+           }
+        }
 
         // 统一的轻提示（Toast），用于复制/分享等非阻塞反馈
-        function showToast(message, type = 'success') {
+        function showToast(message: string, type: string = 'success') {
           let toast = document.getElementById('globalToast');
           if (!toast) {
             toast = document.createElement('div');
@@ -295,17 +360,22 @@ const toDetailHref = (it: ArticleItem) => {
 
         // 渲染 Markdown 到正文容器（使用自定义渲染库）
         try {
-          const { renderMarkdownToElement } = await import('/libs/md-renderer.js');
-          await renderMarkdownToElement(articleMarkdown, mdEl, {
-            // 先禁用库内高亮，改为在行号美化后自定义高亮
-            // highlight: false,
-            mermaid: true,
-            math: true,
-            sanitize: true,
-          });
+          // @ts-ignore
+          const { renderMarkdownToElement } = await import('../../utils/md-renderer.js');
+          if (mdEl) {
+            await renderMarkdownToElement(markdownContent, mdEl, {
+              // 先禁用库内高亮，改为在行号美化后自定义高亮
+              // highlight: false,
+              mermaid: true,
+              math: true,
+              sanitize: true,
+            });
+          }
         } catch (e) {
           // 解析库加载失败则以纯文本回退，避免页面空白
-          mdEl.textContent = articleMarkdown;
+          if (mdEl) {
+            mdEl.textContent = markdownContent || '';
+          }
         }
 
         // 阅读进度
@@ -314,8 +384,10 @@ const toDetailHref = (it: ArticleItem) => {
           const sc = window.scrollY;
           const p = Math.max(0, Math.min(1, docH ? sc/docH : 0));
           const pct = Math.round(p * 100);
-          progress.style.width = pct + '%';
-          progress.setAttribute('aria-valuenow', String(pct));
+          if (progress) {
+            progress.style.width = pct + '%';
+            progress.setAttribute('aria-valuenow', String(pct));
+          }
         }
         updateProgress();
         let ticking = false;
@@ -328,31 +400,34 @@ const toDetailHref = (it: ArticleItem) => {
         window.addEventListener('scroll', onScroll, { passive: true });
 
         // 生成目录并高亮当前章节
-        const headings = Array.from(article.querySelectorAll('h2, h3'));
-        headings.forEach((h) => {
-          const baseId = (h.textContent || '').trim().replace(/\s+/g,'-').toLowerCase();
-          let id = baseId || 'section';
-          if (!h.id) {
-            let n = 2;
-            while (document.getElementById(id)) { id = baseId + '-' + (n++); }
-            h.id = id;
-          } else {
-            id = h.id;
-          }
-          const a = document.createElement('a');
-          a.href = '#' + id;
-          a.textContent = h.textContent;
-          const depth = h.tagName.toLowerCase();
-          const indentClass = depth === 'h3' ? 'pl-3' : '';
-          a.className = 'block px-2 py-1 rounded-lg hover:bg-base-300 ' + indentClass;
-          a.addEventListener('click', (e) => {
-            e.preventDefault();
-            const target = document.getElementById(id);
-            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (target) { target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
+        if (article) {
+          const headings = Array.from(article.querySelectorAll('h2, h3'));
+          headings.forEach((h) => {
+            const baseId = (h.textContent || '').trim().replace(/\s+/g,'-').toLowerCase();
+            let id = baseId || 'section';
+            if (!h.id) {
+              let n = 2;
+              while (document.getElementById(id)) { id = baseId + '-' + (n++); }
+              h.id = id;
+            } else {
+              id = h.id;
+            }
+            const a = document.createElement('a');
+            a.href = '#' + id;
+            a.textContent = h.textContent;
+            const depth = h.tagName.toLowerCase();
+            const indentClass = depth === 'h3' ? 'pl-3' : '';
+            a.className = 'block px-2 py-1 rounded-lg hover:bg-base-300 ' + indentClass;
+            a.addEventListener('click', (e) => {
+              e.preventDefault();
+              const target = document.getElementById(id);
+              const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              if (target) { target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
+            });
+            if (toc) { toc.appendChild(a); }
           });
-          if (toc) { toc.appendChild(a); }
-        });
+        }
+        
         const tocLinks = Array.from(toc ? toc.querySelectorAll('a') : []);
         const observer = new IntersectionObserver((entries) => {
           entries.forEach((entry) => {
@@ -362,38 +437,35 @@ const toDetailHref = (it: ArticleItem) => {
             }
           })
         }, { rootMargin: '0px 0px -70% 0px', threshold: 0.01 });
-        headings.forEach(h => observer.observe(h));
+        if (article) {
+          article.querySelectorAll('h2, h3').forEach(h => observer.observe(h));
+        }
 
         // CSDN风格：语言标签、头部与行号
-        function ensureCss(id, href) {
+        function ensureCss(id: string, href: string) {
           if (document.getElementById(id)) return;
           const link = document.createElement('link');
           link.id = id; link.rel = 'stylesheet'; link.href = href;
           document.head.appendChild(link);
         }
-        function ensureStyle(id, cssText) {
+        function ensureStyle(id: string, cssText: string) {
           if (document.getElementById(id)) return;
           const style = document.createElement('style');
           style.id = id;
           style.textContent = cssText;
           document.head.appendChild(style);
         }
-        function languageName(cls) {
-          const map = {
+        function languageName(cls: string) {
+          const map: Record<string, string> = {
             js: 'JavaScript', ts: 'TypeScript', json: 'JSON', html: 'HTML', css: 'CSS', bash: 'Bash', sh: 'Shell', md: 'Markdown'
           };
           return map[cls] || (cls ? cls.toUpperCase() : 'CODE');
         }
-        async function resolveLocal(localUrl, cdnUrl) {
-          try {
-            const res = await fetch(localUrl, { method: 'HEAD' });
-            return res.ok ? localUrl : cdnUrl;
-          } catch(_) { return cdnUrl; }
-        }
+
         async function prettifyCodeBlocks() {
           // 动态加载高亮库与样式
           // 使用深灰色主题：改用 highlight.js 的 github-dark，并覆盖背景为深灰
-          ensureCss('hljs-style', await resolveLocal('/libs/vendor/highlight.github-dark.min.css', 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css'));
+          await import('highlight.js/styles/github-dark.min.css');
           // 如果之前注入了浅色覆盖样式，移除它
           const prevLight = document.getElementById('hljs-light-override');
           if (prevLight) prevLight.remove();
@@ -462,13 +534,11 @@ const toDetailHref = (it: ArticleItem) => {
           `);
           let hljs;
           try {
-            // Use cdnjs ESM path for highlight core to avoid jsDelivr NPM /es 404
-            const hljsUrl = await resolveLocal('/libs/vendor/highlight.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/es/highlight.min.js');
-            const mod = await import(hljsUrl);
+            const mod = await import('highlight.js');
             hljs = mod.default || mod;
           } catch(_) { hljs = null; }
 
-          const codeNodes = Array.from(article.querySelectorAll('pre > code'));
+          const codeNodes = Array.from(article ? article.querySelectorAll('pre > code') : []);
           codeNodes.forEach((code) => {
             const pre = code.parentElement;
             if (!pre) return;
@@ -554,9 +624,9 @@ const toDetailHref = (it: ArticleItem) => {
         await prettifyCodeBlocks();
 
         // 匿名开关：开启时展示主题绿色
-        const anonInput = document.getElementById('isAnon');
+        const anonInput = document.getElementById('isAnon') as HTMLInputElement | null;
         const refreshAnonToggle = () => {
-          const on = !!(anonInput && (anonInput).checked);
+          const on = !!(anonInput && anonInput.checked);
           if (anonInput) { anonInput.classList.toggle('toggle-success', on); }
         };
         refreshAnonToggle();
@@ -567,35 +637,45 @@ const toDetailHref = (it: ArticleItem) => {
         const bookmarkKey = 'bookmark:' + slug;
         function refreshLike(){
           const liked = localStorage.getItem(likeKey) === '1';
-          btnLike.classList.toggle('bg-emerald-500', liked);
-          btnLike.classList.toggle('text-black', liked);
+          if (btnLike) {
+            btnLike.classList.toggle('bg-emerald-500', liked);
+            btnLike.classList.toggle('text-black', liked);
+          }
         }
         function refreshBookmark(){
           const saved = localStorage.getItem(bookmarkKey) === '1';
-          btnBookmark.classList.toggle('bg-emerald-500', saved);
-          btnBookmark.classList.toggle('text-black', saved);
+          if (btnBookmark) {
+            btnBookmark.classList.toggle('bg-emerald-500', saved);
+            btnBookmark.classList.toggle('text-black', saved);
+          }
         }
         refreshLike(); refreshBookmark();
-        btnLike.addEventListener('click', () => {
-          const liked = localStorage.getItem(likeKey) === '1';
-          localStorage.setItem(likeKey, liked ? '0' : '1');
-          refreshLike();
-        });
-        btnBookmark.addEventListener('click', () => {
-          const saved = localStorage.getItem(bookmarkKey) === '1';
-          localStorage.setItem(bookmarkKey, saved ? '0' : '1');
-          refreshBookmark();
-        });
-        btnShare.addEventListener('click', async () => {
-          const shareData = { title: document.title, text: articleDesc, url: location.href };
-          try {
-            if (navigator.share) { await navigator.share(shareData); showToast('已分享'); }
-            else if (navigator.clipboard && navigator.clipboard.writeText) {
-              await navigator.clipboard.writeText(location.href);
-              showToast('链接已复制');
-            }
-          } catch(_) { }
-        });
+        if (btnLike) {
+          btnLike.addEventListener('click', () => {
+            const liked = localStorage.getItem(likeKey) === '1';
+            localStorage.setItem(likeKey, liked ? '0' : '1');
+            refreshLike();
+          });
+        }
+        if (btnBookmark) {
+          btnBookmark.addEventListener('click', () => {
+            const saved = localStorage.getItem(bookmarkKey) === '1';
+            localStorage.setItem(bookmarkKey, saved ? '0' : '1');
+            refreshBookmark();
+          });
+        }
+        if (btnShare) {
+          btnShare.addEventListener('click', async () => {
+            const shareData = { title: document.title, text: articleDesc || '', url: location.href };
+            try {
+              if (navigator.share) { await navigator.share(shareData); showToast('已分享'); }
+              else if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(location.href);
+                showToast('链接已复制');
+              }
+            } catch(_) { }
+          });
+        }
 
         // 评论（本地存储演示）
         const form = document.getElementById('commentForm');
@@ -603,9 +683,9 @@ const toDetailHref = (it: ArticleItem) => {
         const storeKey = 'comments:' + slug;
         function renderComments(){
           const raw = localStorage.getItem(storeKey);
-          const items = raw ? JSON.parse(raw) : [];
+          const items: any[] = raw ? JSON.parse(raw) : [];
           if (list) { list.innerHTML = ''; }
-          items.forEach((c) => {
+          items.forEach((c: any) => {
             const wrap = document.createElement('div');
             wrap.className = 'p-3 rounded-xl bg-base-300';
             const meta = document.createElement('div');
@@ -623,14 +703,16 @@ const toDetailHref = (it: ArticleItem) => {
         if (form) {
           form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const nicknameEl = document.getElementById('nickname');
-            const emailEl = document.getElementById('email');
-            const contentEl = document.getElementById('content');
-            const isAnonEl = document.getElementById('isAnon');
+            const nicknameEl = document.getElementById('nickname') as HTMLInputElement | null;
+            const emailEl = document.getElementById('email') as HTMLInputElement | null;
+            const contentEl = document.getElementById('content') as HTMLTextAreaElement | null;
+            const isAnonEl = document.getElementById('isAnon') as HTMLInputElement | null;
+            
             const nickname = (nicknameEl && nicknameEl.value) || '';
             const email = (emailEl && emailEl.value) || '';
             const content = (contentEl && contentEl.value) || '';
             const isAnon = !!(isAnonEl && isAnonEl.checked);
+            
             if (!String(content).trim()) return;
             const raw = localStorage.getItem(storeKey);
             const items = raw ? JSON.parse(raw) : [];

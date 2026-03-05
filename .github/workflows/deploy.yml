@@ -20,10 +20,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             # 1. 创建项目目录
-            mkdir -p /root/homepage
+            mkdir -p /opt/homepage
             
             # 2. 拉取最新代码 (如果是基于 Git 拉取模式)
-            # cd /root/homepage
+            # cd /opt/homepage
             # git pull origin main
             
             # 或者：如果不想在服务器装 git，这里假设我们已经通过 SCP/Rsync 把代码传过去了
@@ -37,7 +37,7 @@ jobs:
           username: ${{ root }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "."
-          target: "/root/homepage"
+          target: "/opt/homepage"
           rm: true # 覆盖
           strip_components: 0
           exclude: "node_modules,dist,.git"
@@ -49,7 +49,7 @@ jobs:
           username: ${{ root }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /root/homepage
+            cd /opt/homepage
             # 确保 ASTRO_SITE 为空或设为域名，防止内网 IP 问题
             export ASTRO_SITE=""
             docker-compose up -d --build --remove-orphans

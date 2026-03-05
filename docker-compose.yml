@@ -10,5 +10,10 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"
     environment:
       - TZ=Asia/Shanghai
+    volumes:
+      # 直接挂载服务器上已存在的证书文件
+      - /etc/ssl/certs/devinnest.top.pem:/etc/ssl/certs/devinnest.top.pem:ro
+      - /etc/ssl/private/devinnest.top.key:/etc/ssl/private/devinnest.top.key:ro

@@ -8,6 +8,18 @@ import Card_8x1 from "./card_8x1.astro";
 import Articles_List from "./articles_list.astro";
 import info from "../data/info";
 import StickyNav from "./sticky_nav.astro";
+import { homeApi, type DiaryCardItem } from "../api/home";
+
+let diaryCards: DiaryCardItem[] = info.diaryCards;
+try {
+  const data = await homeApi.getLatestSnippets();
+  if (data && data.diaryCards) {
+    diaryCards = data.diaryCards;
+  }
+} catch (error) {
+  console.error("Failed to fetch latest snippets:", error);
+}
+
 // const showCV = false;
 ---
 
@@ -81,42 +93,52 @@ import StickyNav from "./sticky_nav.astro";
           <Card_8x1 info={info.sectionTitles[2]} />
         </div>
         <div class="col-span-4 overflow-x-auto scrollbar-hide">
-          <div
-            class="flex flex-nowrap gap-4 pb-4 md:hidden"
-            style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;"
-          >
-            {
-              info.diaryCards.map((card) => (
+          {
+            diaryCards.length === 0 ? (
+              <div class="text-center text-gray-400 py-10">
+                <p>暂无日常碎片</p>
+              </div>
+            ) : (
+              <>
                 <div
-                  class="flex-none w-[55%] scroll-snap-align-start"
-                  style="scroll-snap-align: start;"
+                  class="flex flex-nowrap gap-4 pb-4 md:hidden"
+                  style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;"
                 >
-                  <Card_2x3 info={card} />
+                  {
+                    diaryCards.map((card) => (
+                      <div
+                        class="flex-none w-[55%] scroll-snap-align-start"
+                        style="scroll-snap-align: start;"
+                      >
+                        <Card_2x3 info={card} />
+                      </div>
+                    ))
+                  }
                 </div>
-              ))
-            }
-          </div>
-          <div class="hidden md:block">
-            {
-              info.diaryCards.length > 4 ? (
-                <div id="scroll-container" class="flex flex-nowrap gap-4 lg:gap-8 pb-4 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing">
-                  {info.diaryCards.map((card) => (
-                    <div class="flex-none w-[calc((100%-3*1rem)/4)] lg:w-[calc((100%-3*2rem)/4)] select-none">
-                      <Card_2x3 info={card} />
-                    </div>
-                  ))}
+                <div class="hidden md:block">
+                  {
+                    diaryCards.length > 4 ? (
+                      <div id="scroll-container" class="flex flex-nowrap gap-4 lg:gap-8 pb-4 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing">
+                        {diaryCards.map((card) => (
+                          <div class="flex-none w-[calc((100%-3*1rem)/4)] lg:w-[calc((100%-3*2rem)/4)] select-none">
+                            <Card_2x3 info={card} />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div class="grid grid-cols-4 gap-x-4 lg:gap-x-8">
+                        {diaryCards.map((card) => (
+                          <div class="col-span-1">
+                            <Card_2x3 info={card} />
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  }
                 </div>
-              ) : (
-                <div class="grid grid-cols-4 gap-x-4 lg:gap-x-8">
-                  {info.diaryCards.map((card) => (
-                    <div class="col-span-1">
-                      <Card_2x3 info={card} />
-                    </div>
-                  ))}
-                </div>
-              )
-            }
-          </div>
+              </>
+            )
+          }
         </div>
 
         <!-- 音乐创作 -->
@@ -193,15 +215,7 @@ import StickyNav from "./sticky_nav.astro";
             href="https://beian.miit.gov.cn"
             rel="noreferrer"
             target="_blank"
-            class="text-gray-400">浙ICP备xxxxxxxx号</a
-          >
-        </div>
-        <div class="beian">
-          <a
-            href="https://beian.mps.gov.cn/#/query/webSearch?code=11010502054688"
-            rel="noreferrer"
-            target="_blank"
-            class="text-gray-400">浙公网安备xxxxxxx号</a
+            class="text-gray-400">浙ICP备2026006016号-1</a
           >
         </div>
       </footer>

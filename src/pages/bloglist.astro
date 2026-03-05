@@ -1,24 +1,68 @@
 ---
 import StickyNav from "../components/sticky_nav.astro";
 import CategoryIcon from "../components/category_icon.astro";
-import ArticlesListBlog from "../components/articles_list_blog.astro";
-import timeline from "../data/blog_timeline";
+import { blogApi } from "../api/blog";
+import type { BlogListItem, CategoryStat, TagStat } from "../api/blog";
 import type { TimelineGroup, TimelineItem } from "../data/blog_timeline";
-import { categories } from "../data/blog_category";
-import { hotTags } from "../data/blog_category";
-import type { BlogCategory } from "../data/blog_category";
-const blogTimeline: TimelineGroup[] = timeline;
-const timelineCount = blogTimeline.reduce((sum, g) => sum + g.items.length, 0);
 
-// Flatten timeline for client-side filtering
-const allBlogPosts = blogTimeline.flatMap((group) =>
+// 服务端获取数据
+let blogList: BlogListItem[] = [];
+let categories: CategoryStat[] = [];
+let hotTags: TagStat[] = [];
+let timelineGroups: TimelineGroup[] = [];
+let timelineCount = 0;
+
+try {
+  // 并行请求数据
+  const [listRes, categoriesRes, tagsRes] = await Promise.all([
+    blogApi.getBlogList({ pageSize: 1000 }).send(), // 获取所有文章用于时间线
+    blogApi.getCategories().send(),
+    blogApi.getHotTags().send()
+  ]);
+
+  blogList = listRes.list;
+  categories = categoriesRes;
+  hotTags = tagsRes;
+  
+  // 处理时间线数据分组
+  const groups: Record<number, TimelineItem[]> = {};
+  blogList.forEach(item => {
+    const date = new Date(item.date);
+    const year = date.getFullYear();
+    if (!groups[year]) groups[year] = [];
+    
+    // 格式化时间 MM-DD
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    
+    groups[year].push({
+      blogId: item.id,
+      time: `${month}-${day}`,
+      title: item.title,
+      category: item.category?.name,
+      tags: item.tags
+    });
+  });
+
+  // 转换为数组并按年份倒序
+  timelineGroups = Object.entries(groups)
+    .map(([year, items]) => ({
+      year: parseInt(year),
+      items: items.sort((a, b) => b.time.localeCompare(a.time)) // 年内按时间倒序
+    }))
+    .sort((a, b) => b.year - a.year);
+
+  timelineCount = blogList.length;
+
+} catch (error) {
+  console.error('Failed to fetch blog data:', error);
+  // 可以在这里处理降级逻辑，比如使用静态数据
+}
+
+const allBlogPosts = timelineGroups.flatMap((group) =>
   group.items.map((item) => ({
     ...item,
-    // Use full date for sorting and display in list view
     time: `${group.year}-${item.time}`,
-    // Keep original short time if needed, but list view usually prefers full date
-    // Or we can keep 'time' as is and add 'fullTime', but let's standardize on 'time' for the list view
-    // actually, let's keep 'time' as the display string (YYYY-MM-DD)
     year: group.year,
     tags: item.tags || []
   }))
@@ -33,28 +77,6 @@ function parseTimelineDate(t: string | undefined, year: number): Date | null {
   // 尝试直接解析
   const d1 = new Date(year + '-' + s);
   if (!isNaN(d1.getTime())) return d1;
-  // 标准化分隔符
-  const norm = s.replace(/[./]/g, '-');
-  // 处理 MM-DD / M-D
-  const mmdd = norm.match(/^\d{1,2}-\d{1,2}$/);
-  if (mmdd) {
-    const [m, d] = norm.split('-');
-    const mm = m.padStart(2, '0');
-    const dd = d.padStart(2, '0');
-    const composed = `${year}-${mm}-${dd}`;
-    const d2 = new Date(composed);
-    if (!isNaN(d2.getTime())) return d2;
-  }
-  // 兜底：提取连续数字尝试 YYYYMMDD
-  const digits = norm.replace(/[^0-9]/g, '');
-  if (digits.length >= 8) {
-    const y = digits.slice(0, 4);
-    const m = digits.slice(4, 6);
-    const d = digits.slice(6, 8);
-    const composed = `${y}-${m}-${d}`;
-    const d3 = new Date(composed);
-    if (!isNaN(d3.getTime())) return d3;
-  }
   return null;
 }
 
@@ -166,7 +188,7 @@ declare global {
               <h1 class="text-2xl md:text-3xl font-bold mb-2">博客时间线</h1>
               <p class="text-gray-400 mb-4">记录那些让人心动的瞬间与思考</p>
 
-              {blogTimeline.map((group: TimelineGroup) => (
+              {timelineGroups.map((group: TimelineGroup) => (
                 <div class="mb-6" data-year-group>
                   <h2 class={`text-xl md:text-2xl font-semibold ${group.year === currentYear ? 'text-emerald-400' : 'text-gray-300'} mb-2`}>{group.year} 年</h2>
                   <div class={`timeline ${group.year === currentYear ? 'timeline-current' : ''}`}>
@@ -177,7 +199,7 @@ declare global {
                         <div class={`timeline-item ${isRecentSixMonths ? 'is-current-year' : ''}`} data-category={it.category ?? ""} data-tags={(it.tags ?? []).join(",")}>
                           <div class="flex items-start gap-3 text-sm md:text-base">
                             <span class="text-gray-400 w-16 shrink-0">{it.time}</span>
-                            <a href={`/blog/detail/?id=${it.blogId}`} class="hover:text-white text-gray-200">{it.title}</a>
+                            <a href={`/blog/detail?id=${it.blogId}`} class="hover:text-white text-gray-200">{it.title}</a>
                           </div>
                         </div>
                       );
@@ -217,13 +239,13 @@ declare global {
               <h3 class="text-lg md:text-xl font-bold">分类</h3>
               <div class="divider my-2"></div>
               <ul class="space-y-2" id="categoryList">
-                {categories.map((c: BlogCategory, idx) => (
+                {categories.map((c: CategoryStat, idx) => (
                   <li>
-                    <a href={c.href ?? "#"} data-category-link={c.name} class="block px-3 py-2 rounded-lg hover:bg-base-300">
+                    <a href="#" data-category-link={c.name} class="block px-3 py-2 rounded-lg hover:bg-base-300">
                       <div class="flex items-center justify-between">
                         <span class="font-medium text-gray-200" data-category-text>{c.name}</span>
                         <span data-category-icon class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 bg-base-300">
-                          <CategoryIcon name={c.icon} class="w-5 h-5" />
+                          <CategoryIcon name={c.icon as any} class="w-5 h-5" />
                         </span>
                       </div>
                       {c.name === '时间线' ? (
@@ -246,7 +268,9 @@ declare global {
               <h3 class="text-lg md:text-xl font-bold mb-2">热门标签</h3>
               <div class="flex flex-wrap gap-2" id="tagList">
                 {hotTags.map((t) => (
-                  <a href="#" data-tag-link={t} class="px-3 py-1 rounded-full bg-base-300 text-gray-200 hover:bg-base-200">{t}</a>
+                  <a href="#" data-tag-link={t.name} class="px-3 py-1 rounded-full bg-base-300 text-gray-200 hover:bg-base-200">
+                    {t.name} <span class="text-xs opacity-60">({t.count})</span>
+                  </a>
                 ))}
               </div>
             </div>
@@ -384,7 +408,7 @@ declare global {
               
               // 移除大封面占位，改为紧凑的卡片布局
               return `
-                <a href="/blog/detail/?id=${a.blogId}" class="group relative flex flex-col p-4 sm:p-5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-300 w-full">
+                <a href="/blog/detail?id=${a.blogId}" class="group relative flex flex-col p-4 sm:p-5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-300 w-full">
                   <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
                     <span class="flex items-center gap-1.5 font-mono text-emerald-500/80">
                       <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>

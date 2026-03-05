@@ -1,0 +1,417 @@
+---
+import StickyNav from "../components/sticky_nav.astro";
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="black">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 - 页面未找到</title>
+    <meta name="description" content="Page Not Found" />
+    <link
+      rel="preload"
+      href="/fonts/MaoKenZhuYuanTi.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <style>
+      @font-face {
+        font-family: "MaokenZhuyuanTi";
+        src: url(/fonts/MaoKenZhuYuanTi.ttf);
+        font-display: swap;
+      }
+      body {
+        font-family: "MaokenZhuyuanTi", sans-serif;
+        background-color: #0f0f11;
+        color: #e5e7eb;
+        overflow: hidden; /* 防止游戏时滚动 */
+        touch-action: none;
+      }
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+      .content-layer {
+        position: relative;
+        z-index: 10;
+        pointer-events: none; /* 让鼠标事件穿透到 Canvas */
+      }
+      .interactive-btn {
+        pointer-events: auto; /* 按钮需要可点击 */
+      }
+      
+      /* 游戏提示动画 */
+      @keyframes pulse-ring {
+        0% { transform: scale(0.8); opacity: 0.5; }
+        100% { transform: scale(1.3); opacity: 0; }
+      }
+      .game-hint::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 100px;
+        height: 100px;
+        margin-left: -50px;
+        margin-top: -50px;
+        border-radius: 50%;
+        border: 2px solid #10b981;
+        animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col relative">
+    <div class="fixed top-0 left-0 w-full z-50">
+        <StickyNav showImmediately={true} />
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    
+    <main class="flex-1 flex flex-col items-center justify-center p-4 text-center content-layer min-h-screen">
+      <div id="ui-container" class="space-y-6 transition-opacity duration-500">
+        <div class="relative">
+            <!-- 占位 404，实际由 Canvas 渲染砖块 -->
+            <h1 class="text-9xl font-bold text-transparent select-none opacity-0">404</h1>
+        </div>
+        
+        <div class="relative top-8">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 drop-shadow-lg">
+                页面似乎迷路了
+            </h2>
+            <p class="text-gray-400 text-lg max-w-md mx-auto mb-8 drop-shadow-md">
+                打破这些阻碍，或许能找到出口...<br/>
+                <span class="text-sm text-emerald-500/80 mt-2 block game-hint">（移动鼠标或滑动屏幕来控制挡板）</span>
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a 
+                    href="/" 
+                    class="interactive-btn inline-flex items-center gap-2 px-8 py-3 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:scale-105 hover:border-emerald-500/50 transition-all duration-300 backdrop-blur-sm"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                    返回首页
+                </a>
+                
+                <button 
+                    id="restartBtn"
+                    class="interactive-btn hidden inline-flex items-center gap-2 px-8 py-3 rounded-full bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:text-white transition-all duration-300 backdrop-blur-sm"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    重置游戏
+                </button>
+            </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // 游戏配置
+      const CONFIG = {
+        brickRows: 10,
+        brickCols: 20, // 将被 404 形状替代
+        brickGap: 4,
+        ballSpeed: 6,
+        paddleWidth: 120,
+        paddleHeight: 12,
+        colors: {
+            brick: '#34d399', // emerald-400
+            ball: '#ffffff',
+            paddle: '#10b981', // emerald-500
+            bg: '#0f0f11'
+        }
+      };
+
+      // 404 点阵图 (1: 砖块, 0: 空)
+      // 每个数字宽 4 格，间隔 2 格
+      const MAP_404 = [
+        [1,0,0,1, 0,0, 0,1,1,0, 0,0, 1,0,0,1],
+        [1,0,0,1, 0,0, 1,0,0,1, 0,0, 1,0,0,1],
+        [1,1,1,1, 0,0, 1,0,0,1, 0,0, 1,1,1,1],
+        [0,0,0,1, 0,0, 1,0,0,1, 0,0, 0,0,0,1],
+        [0,0,0,1, 0,0, 0,1,1,0, 0,0, 0,0,0,1]
+      ];
+
+      class Game {
+        canvas: HTMLCanvasElement;
+        ctx: CanvasRenderingContext2D;
+        width: number;
+        height: number;
+        ball: { x: number, y: number, dx: number, dy: number, radius: number, active: boolean };
+        paddle: { x: number, width: number, height: number };
+        bricks: { x: number, y: number, width: number, height: number, active: boolean, type: number }[];
+        particles: { x: number, y: number, dx: number, dy: number, life: number, color: string }[];
+        mouseX: number;
+        animationId: number;
+        
+        constructor() {
+            this.canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+            this.ctx = this.canvas.getContext('2d')!;
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
+            this.bricks = [];
+            this.particles = [];
+            this.mouseX = this.width / 2;
+            this.animationId = requestAnimationFrame(this.loop);
+            
+            this.ball = {
+                x: this.width / 2,
+                y: this.height - 200,
+                dx: CONFIG.ballSpeed * (Math.random() > 0.5 ? 1 : -1),
+                dy: -CONFIG.ballSpeed,
+                radius: 6,
+                active: false
+            };
+            
+            this.paddle = {
+                x: this.width / 2 - CONFIG.paddleWidth / 2,
+                width: CONFIG.paddleWidth,
+                height: CONFIG.paddleHeight
+            };
+
+            this.init();
+            this.bindEvents();
+            this.loop = this.loop.bind(this);
+            requestAnimationFrame(this.loop);
+        }
+
+        init() {
+            this.resize();
+            this.createBricks();
+            this.resetBall();
+            
+            // 移动端适配
+            if (this.width < 768) {
+                this.paddle.width = 80;
+                CONFIG.ballSpeed = 4;
+            }
+        }
+
+        resize() {
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+            this.createBricks(); // 重新计算砖块位置
+        }
+
+        createBricks() {
+            this.bricks = [];
+            const rows = MAP_404.length;
+            const cols = MAP_404[0].length;
+            
+            // 计算砖块大小和起始位置以居中
+            const brickWidth = Math.min(40, (this.width - 40) / cols); // 限制最大宽度
+            const brickHeight = brickWidth * 0.6;
+            const totalWidth = cols * (brickWidth + CONFIG.brickGap) - CONFIG.brickGap;
+            const startX = (this.width - totalWidth) / 2;
+            const startY = this.height * 0.25; // 垂直位置
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (MAP_404[r][c] === 1) {
+                        this.bricks.push({
+                            x: startX + c * (brickWidth + CONFIG.brickGap),
+                            y: startY + r * (brickHeight + CONFIG.brickGap),
+                            width: brickWidth,
+                            height: brickHeight,
+                            active: true,
+                            type: 1
+                        });
+                    }
+                }
+            }
+        }
+
+        resetBall() {
+            this.ball.x = this.width / 2;
+            this.ball.y = this.height - 100;
+            this.ball.dx = CONFIG.ballSpeed * (Math.random() > 0.5 ? 1 : -1);
+            this.ball.dy = -CONFIG.ballSpeed;
+            this.ball.active = false; // 等待用户交互启动
+        }
+
+        createExplosion(x: number, y: number, color: string) {
+            for (let i = 0; i < 8; i++) {
+                this.particles.push({
+                    x: x,
+                    y: y,
+                    dx: (Math.random() - 0.5) * 8,
+                    dy: (Math.random() - 0.5) * 8,
+                    life: 1.0,
+                    color: color
+                });
+            }
+        }
+
+        update() {
+            // 更新挡板位置 (平滑跟随)
+            const targetX = this.mouseX - this.paddle.width / 2;
+            this.paddle.x += (targetX - this.paddle.x) * 0.2;
+            
+            // 限制挡板范围
+            if (this.paddle.x < 0) this.paddle.x = 0;
+            if (this.paddle.x + this.paddle.width > this.width) this.paddle.x = this.width - this.paddle.width;
+
+            // 启动球
+            if (!this.ball.active && (Math.abs(this.mouseX - this.width/2) > 10 || this.width < 768)) {
+                 this.ball.active = true;
+            }
+
+            if (!this.ball.active) {
+                this.ball.x = this.paddle.x + this.paddle.width / 2;
+                this.ball.y = this.height - 60;
+                return;
+            }
+
+            // 更新球位置
+            this.ball.x += this.ball.dx;
+            this.ball.y += this.ball.dy;
+
+            // 墙壁碰撞
+            if (this.ball.x + this.ball.radius > this.width || this.ball.x - this.ball.radius < 0) {
+                this.ball.dx = -this.ball.dx;
+            }
+            if (this.ball.y - this.ball.radius < 0) {
+                this.ball.dy = -this.ball.dy;
+            }
+
+            // 掉落重置
+            if (this.ball.y > this.height) {
+                this.resetBall();
+                // 可以加个扣分或震动效果
+            }
+
+            // 挡板碰撞
+            if (
+                this.ball.y + this.ball.radius > this.height - 50 &&
+                this.ball.y - this.ball.radius < this.height - 50 + this.paddle.height &&
+                this.ball.x > this.paddle.x &&
+                this.ball.x < this.paddle.x + this.paddle.width
+            ) {
+                this.ball.dy = -Math.abs(this.ball.dy); // 总是向上反弹
+                // 根据击打位置改变 X 速度 (增加操控感)
+                const hitPoint = (this.ball.x - (this.paddle.x + this.paddle.width / 2)) / (this.paddle.width / 2);
+                this.ball.dx = hitPoint * CONFIG.ballSpeed * 1.5;
+                
+                // 增加一点速度
+                this.createExplosion(this.ball.x, this.height - 50, CONFIG.colors.paddle);
+            }
+
+            // 砖块碰撞
+            let hit = false;
+            this.bricks.forEach(brick => {
+                if (!brick.active || hit) return;
+
+                if (
+                    this.ball.x > brick.x &&
+                    this.ball.x < brick.x + brick.width &&
+                    this.ball.y > brick.y &&
+                    this.ball.y < brick.y + brick.height
+                ) {
+                    brick.active = false;
+                    this.ball.dy = -this.ball.dy;
+                    hit = true;
+                    this.createExplosion(brick.x + brick.width/2, brick.y + brick.height/2, CONFIG.colors.brick);
+                    
+                    // 检查是否胜利
+                    if (this.bricks.every(b => !b.active)) {
+                        setTimeout(() => this.createBricks(), 1000); // 1秒后重置
+                    }
+                }
+            });
+
+            // 更新粒子
+            this.particles.forEach((p, i) => {
+                p.x += p.dx;
+                p.y += p.dy;
+                p.life -= 0.02;
+                if (p.life <= 0) this.particles.splice(i, 1);
+            });
+        }
+
+        draw() {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+
+            // 绘制砖块
+            this.bricks.forEach(brick => {
+                if (!brick.active) return;
+                this.ctx.fillStyle = CONFIG.colors.brick;
+                this.ctx.shadowBlur = 15;
+                this.ctx.shadowColor = CONFIG.colors.brick;
+                this.ctx.beginPath();
+                this.ctx.roundRect(brick.x, brick.y, brick.width, brick.height, 4);
+                this.ctx.fill();
+                this.ctx.shadowBlur = 0;
+            });
+
+            // 绘制挡板
+            this.ctx.fillStyle = CONFIG.colors.paddle;
+            this.ctx.shadowBlur = 20;
+            this.ctx.shadowColor = CONFIG.colors.paddle;
+            this.ctx.beginPath();
+            this.ctx.roundRect(this.paddle.x, this.height - 50, this.paddle.width, this.paddle.height, 6);
+            this.ctx.fill();
+            this.ctx.shadowBlur = 0;
+
+            // 绘制球
+            this.ctx.fillStyle = CONFIG.colors.ball;
+            this.ctx.beginPath();
+            this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // 绘制粒子
+            this.particles.forEach(p => {
+                this.ctx.fillStyle = `rgba(52, 211, 153, ${p.life})`;
+                this.ctx.beginPath();
+                this.ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                this.ctx.fill();
+            });
+        }
+
+        loop() {
+            this.update();
+            this.draw();
+            this.animationId = requestAnimationFrame(this.loop);
+        }
+
+        bindEvents() {
+            window.addEventListener('resize', () => this.resize());
+            window.addEventListener('mousemove', (e) => {
+                this.mouseX = e.clientX;
+            });
+            window.addEventListener('touchmove', (e) => {
+                this.mouseX = e.touches[0].clientX;
+            }, { passive: true });
+            
+            const restartBtn = document.getElementById('restartBtn');
+            if (restartBtn) {
+                restartBtn.addEventListener('click', () => {
+                    this.createBricks();
+                    this.resetBall();
+                });
+            }
+        }
+      }
+
+      // 启动游戏
+      window.onload = () => {
+        new Game();
+        
+        // 显示重启按钮
+        setTimeout(() => {
+            document.getElementById('restartBtn')?.classList.remove('hidden');
+        }, 1000);
+      };
+    </script>
+  </body>
+</html>
